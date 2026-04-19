@@ -1,0 +1,67 @@
+{
+  "personal": {
+    "name": "Yash ___",
+    "email": "your@email.com",
+    "phone": "+1-___-___-____",
+    "location": "Gaithersburg, MD",
+    "linkedin": "https://linkedin.com/in/___",
+    "github": "https://github.com/___",
+    "portfolio": "https://___"
+  },
+  "summary": "Staff-level frontend engineer with 8+ years building production React applications at scale. Focused on design systems, performance, and developer experience.",
+  "experience": [
+    {
+      "company": "ZoomInfo",
+      "role": "Senior Frontend Engineer",
+      "dates": "2022 - Present",
+      "location": "Remote",
+      "bullets": [
+        {
+          "text": "Led frontend rebuild of GTM Studio, migrating from Angular to React + TypeScript, reducing Time-to-Interactive by 40%",
+          "tags": ["react", "typescript", "migration", "performance", "leadership"],
+          "scope": "team",
+          "metrics": "40% TTI reduction"
+        },
+        {
+          "text": "Built shared component library adopted across GTM Workspace and GTM Studio, eliminating ~8k lines of duplicated UI code",
+          "tags": ["design-system", "react", "typescript", "platform"],
+          "scope": "org",
+          "metrics": "8k LOC removed"
+        },
+        {
+          "text": "Designed and shipped internal Chrome extension for UI regression testing, catching 60+ visual bugs pre-release",
+          "tags": ["chrome-extension", "testing", "tooling", "devex"],
+          "scope": "team",
+          "metrics": "60+ bugs caught"
+        }
+      ]
+    },
+    {
+      "company": "___ Previous Company",
+      "role": "Frontend Engineer",
+      "dates": "2019 - 2022",
+      "location": "Remote",
+      "bullets": [
+        {
+          "text": "Replace with real bullet 1",
+          "tags": ["react", "performance"],
+          "scope": "team",
+          "metrics": ""
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "school": "___",
+      "degree": "___",
+      "dates": "___"
+    }
+  ],
+  "skills": {
+    "languages": ["TypeScript", "JavaScript", "Python", "HTML", "CSS"],
+    "frameworks": ["React", "Next.js", "Node.js", "Express", "Vue"],
+    "tools": ["Webpack", "Vite", "Playwright", "Jest", "Storybook", "Figma"],
+    "platforms": ["AWS", "Vercel", "Chrome Extensions", "Web Performance APIs"]
+  }
+}

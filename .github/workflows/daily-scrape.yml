@@ -1,0 +1,50 @@
+name: Daily scrape
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Write secrets to files
+        env:
+          PROFILE_JSON: ${{ secrets.PROFILE_JSON }}
+          MASTER_RESUME_JSON: ${{ secrets.MASTER_RESUME_JSON }}
+        run: |
+          echo "$PROFILE_JSON" > profile.json
+          echo "$MASTER_RESUME_JSON" > master_resume.json
+
+      - name: Seed profile + resume
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python seed.py
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python main.py
+
+      - name: Upload tailored resumes
+        uses: actions/upload-artifact@v4
+        with:
+          name: tailored-resumes-${{ github.run_id }}
+          path: backend/output/resumes/
+          retention-days: 30

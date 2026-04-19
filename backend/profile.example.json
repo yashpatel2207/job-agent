@@ -1,0 +1,53 @@
+{
+  "personal": {
+    "first_name": "Yash",
+    "last_name": "___",
+    "email": "your@email.com",
+    "phone": "+1-___-___-____",
+    "address": "___",
+    "city": "Gaithersburg",
+    "state": "MD",
+    "zip": "___",
+    "country": "United States",
+    "linkedin": "https://linkedin.com/in/___",
+    "github": "https://github.com/___",
+    "portfolio": "https://___"
+  },
+  "work_auth": {
+    "authorized_us": true,
+    "needs_sponsorship_now": false,
+    "needs_sponsorship_future": false,
+    "visa_status": "US Citizen"
+  },
+  "logistics": {
+    "notice_period_weeks": 2,
+    "earliest_start": "2026-05-15",
+    "willing_to_relocate": false,
+    "remote_preference": "Remote",
+    "open_to_hybrid_sf": true,
+    "open_to_hybrid_nyc": true,
+    "current_comp_base": 180000,
+    "desired_comp_min": 220000,
+    "desired_comp_target": 260000
+  },
+  "eeo": {
+    "gender": "Decline to self-identify",
+    "race": "Decline to self-identify",
+    "veteran_status": "Decline to self-identify",
+    "disability_status": "Decline to self-identify",
+    "hispanic_latino": "Decline to self-identify"
+  },
+  "workday_credentials": {
+    "default_password": "SET_A_STRONG_PASSWORD_HERE"
+  },
+  "saved_answers": {
+    "biggest_frontend_project": "REPLACE - your evergreen 3-paragraph answer about your proudest frontend work",
+    "why_frontend": "REPLACE - your answer about why you chose frontend",
+    "years_react": 7,
+    "years_typescript": 5,
+    "years_nodejs": 4,
+    "how_heard_about_us_default": "Came across the role through my network and was impressed by your product",
+    "referrals": {}
+  },
+  "fallback_strategy": "flag"
+}

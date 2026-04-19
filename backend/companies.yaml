@@ -1,0 +1,103 @@
+companies:
+  - name: Linear
+    slug: linear
+    ats: greenhouse
+  - name: Vercel
+    slug: vercel
+    ats: ashby
+  - name: Notion
+    slug: notion
+    ats: greenhouse
+  - name: Figma
+    slug: figma
+    ats: greenhouse
+  - name: Anthropic
+    slug: anthropic
+    ats: greenhouse
+  - name: Stripe
+    slug: stripe
+    ats: greenhouse
+  - name: Airbnb
+    slug: airbnb
+    ats: greenhouse
+  - name: Scale AI
+    slug: scaleai
+    ats: ashby
+  - name: Replit
+    slug: replit
+    ats: ashby
+  - name: Retool
+    slug: retool
+    ats: greenhouse
+  - name: Ramp
+    slug: ramp
+    ats: ashby
+  - name: Mercury
+    slug: mercury
+    ats: ashby
+  - name: Discord
+    slug: discord
+    ats: lever
+  - name: Plaid
+    slug: plaid
+    ats: greenhouse
+  - name: Brex
+    slug: brex
+    ats: greenhouse
+  - name: Datadog
+    slug: datadog
+    ats: greenhouse
+  - name: Cloudflare
+    slug: cloudflare
+    ats: greenhouse
+  - name: Canva
+    slug: canva
+    ats: lever
+  - name: OpenAI
+    slug: openai
+    ats: greenhouse
+  - name: Shopify
+    slug: shopify
+    ats: smartrecruiters
+  - name: GitHub
+    slug: github
+    ats: greenhouse
+  - name: Databricks
+    slug: databricks
+    ats: greenhouse
+  - name: Snowflake
+    slug: snowflake
+    ats: greenhouse
+  - name: HashiCorp
+    slug: hashicorp
+    ats: greenhouse
+  - name: Elastic
+    slug: elastic
+    ats: greenhouse
+
+criteria:
+  target_roles:
+    - Staff Frontend Engineer
+    - Senior Staff Frontend Engineer
+    - Staff Software Engineer Frontend
+    - Principal Frontend Engineer
+    - Staff Engineer Web
+  required_skills:
+    - React
+    - TypeScript
+  preferred_skills:
+    - Next.js
+    - design systems
+    - performance
+    - accessibility
+    - Node.js
+  comp_min: 200000
+  location:
+    - Remote
+    - Hybrid SF
+    - Hybrid NYC
+  exclude:
+    - crypto
+    - web3
+    - blockchain
+    - defense
