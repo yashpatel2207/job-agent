@@ -1,18 +1,10 @@
 companies:
-  - name: Linear
-    slug: linear
-    ats: greenhouse
-  - name: Vercel
-    slug: vercel
-    ats: ashby
-  - name: Notion
-    slug: notion
-    ats: greenhouse
-  - name: Figma
-    slug: figma
-    ats: greenhouse
+
   - name: Anthropic
     slug: anthropic
+    ats: greenhouse
+  - name: OpenAI
+    slug: openai
     ats: greenhouse
   - name: Stripe
     slug: stripe
@@ -20,15 +12,110 @@ companies:
   - name: Airbnb
     slug: airbnb
     ats: greenhouse
+  - name: Databricks
+    slug: databricks
+    ats: greenhouse
+  - name: Snowflake
+    slug: snowflake
+    ats: greenhouse
+  - name: Datadog
+    slug: datadog
+    ats: greenhouse
+  - name: Cloudflare
+    slug: cloudflare
+    ats: greenhouse
+  - name: GitHub
+    slug: github
+    ats: greenhouse
+  - name: HashiCorp
+    slug: hashicorp
+    ats: greenhouse
+  - name: Elastic
+    slug: elastic
+    ats: greenhouse
+  - name: MongoDB
+    slug: mongodb
+    ats: greenhouse
+  - name: Twilio
+    slug: twilio
+    ats: greenhouse
+  - name: DoorDash
+    slug: doordashusa
+    ats: greenhouse
+  - name: Instacart
+    slug: instacart
+    ats: greenhouse
+  - name: Reddit
+    slug: reddit
+    ats: greenhouse
+  - name: Pinterest
+    slug: pinterest
+    ats: greenhouse
+  - name: Roblox
+    slug: roblox
+    ats: greenhouse
+  - name: Lyft
+    slug: lyft
+    ats: greenhouse
+  - name: Robinhood
+    slug: robinhood
+    ats: greenhouse
+
+  - name: Notion
+    slug: notion
+    ats: greenhouse
+  - name: Figma
+    slug: figma
+    ats: greenhouse
+  - name: Plaid
+    slug: plaid
+    ats: greenhouse
+  - name: Brex
+    slug: brex
+    ats: greenhouse
+  - name: Retool
+    slug: retool
+    ats: greenhouse
+  - name: Asana
+    slug: asana
+    ats: greenhouse
+  - name: Box
+    slug: box
+    ats: greenhouse
+  - name: HubSpot
+    slug: hubspot
+    ats: greenhouse
+  - name: Zendesk
+    slug: zendesk
+    ats: greenhouse
+  - name: Wayfair
+    slug: wayfair
+    ats: greenhouse
+  - name: Etsy
+    slug: etsy
+    ats: greenhouse
+  - name: Squarespace
+    slug: squarespace
+    ats: greenhouse
+  - name: Toast
+    slug: toast
+    ats: greenhouse
+  - name: Affirm
+    slug: affirm
+    ats: greenhouse
+
+  - name: Linear
+    slug: linear
+    ats: greenhouse
+  - name: Vercel
+    slug: vercel
+    ats: ashby
   - name: Scale AI
     slug: scaleai
     ats: ashby
   - name: Replit
     slug: replit
     ats: ashby
-  - name: Retool
-    slug: retool
-    ats: greenhouse
   - name: Ramp
     slug: ramp
     ats: ashby
@@ -38,66 +125,119 @@ companies:
   - name: Discord
     slug: discord
     ats: lever
-  - name: Plaid
-    slug: plaid
-    ats: greenhouse
-  - name: Brex
-    slug: brex
-    ats: greenhouse
-  - name: Datadog
-    slug: datadog
-    ats: greenhouse
-  - name: Cloudflare
-    slug: cloudflare
-    ats: greenhouse
   - name: Canva
     slug: canva
     ats: lever
-  - name: OpenAI
-    slug: openai
+  - name: Hex
+    slug: hex
+    ats: ashby
+  - name: Modal
+    slug: modal
+    ats: ashby
+  - name: Perplexity
+    slug: perplexity
+    ats: ashby
+  - name: Cursor
+    slug: anysphere
+    ats: ashby
+
+  - name: Block (Square)
+    slug: square
     ats: greenhouse
-  - name: Shopify
-    slug: shopify
-    ats: smartrecruiters
-  - name: GitHub
-    slug: github
+  - name: Coinbase
+    slug: coinbase
     ats: greenhouse
-  - name: Databricks
-    slug: databricks
+  - name: Chime
+    slug: chime
     ats: greenhouse
-  - name: Snowflake
-    slug: snowflake
+  - name: Better
+    slug: better
     ats: greenhouse
-  - name: HashiCorp
-    slug: hashicorp
+  - name: SoFi
+    slug: sofi
     ats: greenhouse
-  - name: Elastic
-    slug: elastic
-    ats: greenhouse
+
+  - name: Bloomberg
+    slug: bloomberg
+    ats: workday
+    tenant: bloomberg
+    wd_num: 1
+    site: External
+  - name: Capital One
+    slug: capitalone
+    ats: workday
+    tenant: capitalone
+    wd_num: 1
+    site: Capital_One
+  - name: Salesforce
+    slug: salesforce
+    ats: workday
+    tenant: salesforce
+    wd_num: 12
+    site: External_Career_Site
+  - name: ServiceNow
+    slug: servicenow
+    ats: workday
+    tenant: servicenow
+    wd_num: 1
+    site: ServiceNow
+  - name: Workday
+    slug: workday
+    ats: workday
+    tenant: workday
+    wd_num: 5
+    site: Workday
 
 criteria:
   target_roles:
+    - Senior Frontend Engineer
+    - Senior Software Engineer Frontend
     - Staff Frontend Engineer
-    - Senior Staff Frontend Engineer
-    - Staff Software Engineer Frontend
+    - Senior Software Engineer
+    - Lead Frontend Engineer
     - Principal Frontend Engineer
-    - Staff Engineer Web
   required_skills:
-    - React
+    - JavaScript
     - TypeScript
   preferred_skills:
+    - React
+    - Angular
     - Next.js
     - design systems
     - performance
-    - accessibility
     - Node.js
-  comp_min: 200000
+  comp_min: 180000
   location:
     - Remote
-    - Hybrid SF
-    - Hybrid NYC
+    - United States
+    - California
+    - San Francisco
+    - Bay Area
+    - Los Angeles
+    - New York
+    - NYC
+    - New Jersey
+    - Florida
+    - Miami
+    - Atlanta
+    - Georgia
+    - Philadelphia
+    - Pennsylvania
+    - Seattle
+    - Washington
+    - Boston
+    - Massachusetts
+    - Austin
+    - Texas
+    - Chicago
+    - Illinois
+    - Hybrid DC
+    - Hybrid Bethesda
+    - Hybrid Maryland
+    - Hybrid Virginia
   exclude:
     - crypto
     - web3
     - blockchain
     - defense
+  sponsorship_required: true

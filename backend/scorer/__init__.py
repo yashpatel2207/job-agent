@@ -17,6 +17,7 @@ Preferred skills: {preferred_skills}
 Minimum comp: ${comp_min:,}
 Acceptable locations: {locations}
 Hard exclusions (do NOT apply): {exclude}
+Candidate needs H1B sponsorship: {sponsorship_required}
 
 Job posting:
 Company: {company}
@@ -33,7 +34,8 @@ Return a JSON object with this exact shape, no markdown, no preamble:
   "red_flags": [<0-3 short strings, concerns>],
   "seniority_fit": "below" | "match" | "above",
   "comp_visible": <true if comp is stated in JD, false otherwise>,
-  "comp_range": "<string or null>"
+  "comp_range": "<string or null>",
+  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear"
 }}
 
 Scoring guidance:
@@ -42,6 +44,9 @@ Scoring guidance:
 - 5-6: Borderline, meaningful gaps.
 - 0-4: Not worth applying. Wrong level, missing required skills, in exclusion list, or comp clearly below minimum.
 - If the role is in the exclusion list (crypto, web3, etc.), score 0.
+- LOCATION: The acceptable locations list is broad. Treat any US-based role (remote or in any of the listed metros) as a location match. Only penalize for location if the role is non-US, requires being in a city not on the list (e.g. Detroit, Salt Lake City), or requires in-office presence somewhere the candidate cannot relocate to.
+- SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
+- Federal contractor / defense / clearance-required roles almost always require US persons — treat as "explicit_no" for sponsorship purposes.
 """
 
 
@@ -53,6 +58,7 @@ def score_job(job: Job, criteria: dict) -> dict:
         comp_min=criteria["comp_min"],
         locations=", ".join(criteria["location"]),
         exclude=", ".join(criteria["exclude"]),
+        sponsorship_required="yes" if criteria.get("sponsorship_required") else "no",
         company=job.company,
         title=job.title,
         location=job.location or "unspecified",
