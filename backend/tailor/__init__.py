@@ -1,15 +1,13 @@
 """Tailor the master resume for a specific job, output a DOCX."""
-import os
 import json
 from pathlib import Path
-from anthropic import Anthropic
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from db.models import Job, MasterResume, get_session
+from llm import call_claude
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-MODEL = "claude-opus-4-7"
+MODEL = "opus"
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output" / "resumes"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -56,13 +54,7 @@ def tailor_resume(job: Job, master: dict) -> dict:
         master_json=json.dumps(master, indent=2),
     )
 
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    text = resp.content[0].text.strip()
+    text = call_claude(prompt, model=MODEL)
     if text.startswith("```"):
         text = text.split("```")[1]
         if text.startswith("json"):

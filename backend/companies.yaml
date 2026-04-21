@@ -5,7 +5,7 @@ companies:
     ats: greenhouse
   - name: OpenAI
     slug: openai
-    ats: greenhouse
+    ats: ashby
   - name: Stripe
     slug: stripe
     ats: greenhouse
@@ -15,20 +15,11 @@ companies:
   - name: Databricks
     slug: databricks
     ats: greenhouse
-  - name: Snowflake
-    slug: snowflake
-    ats: greenhouse
   - name: Datadog
     slug: datadog
     ats: greenhouse
   - name: Cloudflare
     slug: cloudflare
-    ats: greenhouse
-  - name: GitHub
-    slug: github
-    ats: greenhouse
-  - name: HashiCorp
-    slug: hashicorp
     ats: greenhouse
   - name: Elastic
     slug: elastic
@@ -63,37 +54,25 @@ companies:
 
   - name: Notion
     slug: notion
-    ats: greenhouse
+    ats: ashby
   - name: Figma
     slug: figma
     ats: greenhouse
   - name: Plaid
     slug: plaid
-    ats: greenhouse
+    ats: ashby
   - name: Brex
     slug: brex
-    ats: greenhouse
-  - name: Retool
-    slug: retool
     ats: greenhouse
   - name: Asana
     slug: asana
     ats: greenhouse
-  - name: Box
-    slug: box
-    ats: greenhouse
-  - name: HubSpot
-    slug: hubspot
-    ats: greenhouse
   - name: Zendesk
     slug: zendesk
-    ats: greenhouse
-  - name: Wayfair
-    slug: wayfair
-    ats: greenhouse
-  - name: Etsy
-    slug: etsy
-    ats: greenhouse
+    ats: workday
+    tenant: zendesk
+    wd_num: 1
+    site: zendesk
   - name: Squarespace
     slug: squarespace
     ats: greenhouse
@@ -105,14 +84,11 @@ companies:
     ats: greenhouse
 
   - name: Linear
-    slug: linear
-    ats: greenhouse
+    slug: Linear
+    ats: ashby
   - name: Vercel
     slug: vercel
-    ats: ashby
-  - name: Scale AI
-    slug: scaleai
-    ats: ashby
+    ats: greenhouse
   - name: Replit
     slug: replit
     ats: ashby
@@ -121,16 +97,13 @@ companies:
     ats: ashby
   - name: Mercury
     slug: mercury
-    ats: ashby
+    ats: greenhouse
   - name: Discord
     slug: discord
-    ats: lever
-  - name: Canva
-    slug: canva
-    ats: lever
+    ats: greenhouse
   - name: Hex
-    slug: hex
-    ats: ashby
+    slug: hextechnologies
+    ats: greenhouse
   - name: Modal
     slug: modal
     ats: ashby
@@ -138,11 +111,11 @@ companies:
     slug: perplexity
     ats: ashby
   - name: Cursor
-    slug: anysphere
+    slug: cursor
     ats: ashby
 
-  - name: Block (Square)
-    slug: square
+  - name: Block
+    slug: block
     ats: greenhouse
   - name: Coinbase
     slug: coinbase
@@ -150,37 +123,16 @@ companies:
   - name: Chime
     slug: chime
     ats: greenhouse
-  - name: Better
-    slug: better
-    ats: greenhouse
   - name: SoFi
     slug: sofi
     ats: greenhouse
 
-  - name: Bloomberg
-    slug: bloomberg
-    ats: workday
-    tenant: bloomberg
-    wd_num: 1
-    site: External
-  - name: Capital One
-    slug: capitalone
-    ats: workday
-    tenant: capitalone
-    wd_num: 1
-    site: Capital_One
   - name: Salesforce
     slug: salesforce
     ats: workday
     tenant: salesforce
     wd_num: 12
     site: External_Career_Site
-  - name: ServiceNow
-    slug: servicenow
-    ats: workday
-    tenant: servicenow
-    wd_num: 1
-    site: ServiceNow
   - name: Workday
     slug: workday
     ats: workday
