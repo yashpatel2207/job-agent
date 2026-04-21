@@ -20,16 +20,33 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Install deps
+      - name: Install Python deps
         run: pip install -r requirements.txt
 
-      - name: Write secrets to files
+      - name: Set up Node (for claude CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Restore claude credentials from secret
+        env:
+          CLAUDE_CREDENTIALS_JSON: ${{ secrets.CLAUDE_CREDENTIALS_JSON }}
+        run: |
+          mkdir -p "$HOME/.claude"
+          printf '%s' "$CLAUDE_CREDENTIALS_JSON" > "$HOME/.claude/.credentials.json"
+          chmod 600 "$HOME/.claude/.credentials.json"
+          claude auth status
+
+      - name: Write profile + resume from secrets
         env:
           PROFILE_JSON: ${{ secrets.PROFILE_JSON }}
           MASTER_RESUME_JSON: ${{ secrets.MASTER_RESUME_JSON }}
         run: |
-          echo "$PROFILE_JSON" > profile.json
-          echo "$MASTER_RESUME_JSON" > master_resume.json
+          printf '%s' "$PROFILE_JSON" > profile.json
+          printf '%s' "$MASTER_RESUME_JSON" > master_resume.json
 
       - name: Seed profile + resume
         env:
@@ -38,7 +55,6 @@ jobs:
 
       - name: Run pipeline
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python main.py
 
