@@ -6,7 +6,7 @@ from db.models import Job, get_session
 from scraper import load_config
 from llm import call_claude
 
-MODEL = "opus"
+MODEL = "sonnet"
 
 TITLE_INCLUDE_RE = re.compile(r"\b(engineer|engineering|developer|swe|programmer|architect)\b", re.I)
 TITLE_EXCLUDE_RE = re.compile(
