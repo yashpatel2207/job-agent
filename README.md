@@ -82,9 +82,11 @@ This scrapes all companies, scores new jobs, and generates tailored resumes. Fir
 
 ### 6. Start the local API and dashboard
 
-Shortcut (starts both, Ctrl+C stops both):
+Shortcut (starts both, Ctrl+C stops both) — run once at the repo root:
+
 ```bash
-./dev.sh
+npm install
+npm run dev
 ```
 
 Or start them separately:

@@ -1,0 +1,13 @@
+{
+  "name": "job-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm:backend\" \"npm:frontend\"",
+    "backend": "cd backend && venv/Scripts/uvicorn server:app --reload --port 8000",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
