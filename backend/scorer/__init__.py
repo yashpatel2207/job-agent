@@ -1,11 +1,60 @@
 """Score jobs against user criteria using Claude."""
 import json
+import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from db.models import Job, get_session
 from scraper import load_config
 from llm import call_claude
 
-MODEL = "sonnet"
+FAST_MODEL = "haiku"
+JUDGE_MODEL = "sonnet"
+BORDERLINE_LOW = 5.0
+BORDERLINE_HIGH = 7.5
+SCORING_WORKERS = 3
+
+NO_SPONSORSHIP_RE = re.compile(
+    r"(no\s+(?:visa\s+)?sponsorship|"
+    r"not\s+(?:able\s+to\s+)?sponsor(?:\s+visas?)?|"
+    r"do\s+not\s+(?:offer|provide)\s+(?:visa\s+)?sponsorship|"
+    r"unable\s+to\s+(?:offer|provide)\s+(?:visa\s+)?sponsorship|"
+    r"no\s+visa\s+transfers?|"
+    r"must\s+be\s+(?:legally\s+)?authorized\s+to\s+work\s+(?:in\s+the\s+(?:us|united\s+states|u\.s\.)\s+)?without\s+(?:current\s+or\s+future\s+)?(?:visa\s+|employer\s+)?sponsorship|"
+    r"authorized\s+to\s+work\s+in\s+the\s+(?:us|united\s+states|u\.s\.)\s+without\s+(?:current\s+or\s+future\s+)?(?:visa\s+|employer\s+)?sponsorship)",
+    re.I,
+)
+
+CLEARANCE_RE = re.compile(
+    r"\b(security\s+clearance|"
+    r"(?:active\s+)?(?:ts/sci|top\s+secret|secret\s+clearance)|"
+    r"us\s+citizens?(?:hip)?\s+(?:only|required|is\s+required)|"
+    r"must\s+be\s+(?:a\s+)?us\s+citizen|"
+    r"us\s+person(?:s)?\s+(?:only|required)|"
+    r"itar(?:-|\s)?restricted|"
+    r"public\s+trust\s+clearance)\b",
+    re.I,
+)
+
+NON_US_LOCATION_RE = re.compile(
+    r"\b(london|manchester|edinburgh|dublin|berlin|munich|hamburg|amsterdam|"
+    r"paris|lyon|madrid|barcelona|milan|rome|warsaw|prague|stockholm|"
+    r"copenhagen|oslo|helsinki|zurich|geneva|lisbon|athens|"
+    r"toronto|vancouver|montreal|ottawa|calgary|"
+    r"bengaluru|bangalore|hyderabad|mumbai|delhi|pune|chennai|gurgaon|noida|kolkata|"
+    r"tokyo|osaka|kyoto|seoul|singapore|hong\s*kong|shanghai|beijing|shenzhen|taipei|bangkok|"
+    r"sydney|melbourne|brisbane|auckland|wellington|"
+    r"sao\s*paulo|rio\s*de\s*janeiro|buenos\s*aires|mexico\s*city|bogota|santiago|lima|"
+    r"tel\s*aviv|dubai|riyadh|cairo|johannesburg|cape\s*town|lagos|nairobi|"
+    r"united\s+kingdom|\buk\b|ireland|germany|france|spain|italy|netherlands|"
+    r"switzerland|sweden|norway|denmark|finland|poland|portugal|"
+    r"canada|india|japan|south\s+korea|china|taiwan|thailand|vietnam|philippines|indonesia|malaysia|"
+    r"australia|new\s+zealand|"
+    r"brazil|argentina|mexico|colombia|chile|peru|"
+    r"israel|uae|united\s+arab\s+emirates|saudi\s+arabia|egypt|south\s+africa|nigeria|kenya|"
+    r"emea|apac|latam|"
+    r"remote\s*[-,\s]\s*(?:europe|emea|apac|india|canada|latam|uk|germany))\b",
+    re.I,
+)
 
 SCORING_PROMPT = """You are evaluating a job posting for a candidate with these criteria:
 
@@ -48,7 +97,38 @@ Scoring guidance:
 """
 
 
-def score_job(job: Job, criteria: dict) -> dict:
+def prescreen(job: Job, criteria: dict) -> dict | None:
+    """Cheap regex prefilter. Returns a score dict to hard-drop, or None to pass to Claude."""
+    jd = (job.jd_text or "")[:10000]
+    hay = f"{job.title or ''}\n{jd}"
+
+    exclude_terms = [t.strip() for t in criteria.get("exclude", []) if t.strip()]
+    if exclude_terms:
+        exclude_re = re.compile(
+            r"\b(" + "|".join(re.escape(t) for t in exclude_terms) + r")\b", re.I
+        )
+        if exclude_re.search(hay):
+            return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-excluded"]}
+
+    if CLEARANCE_RE.search(hay):
+        return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-clearance"]}
+
+    if criteria.get("sponsorship_required") and NO_SPONSORSHIP_RE.search(jd):
+        return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-no-sponsorship"]}
+
+    loc = (job.location or "").strip()
+    if loc:
+        loc_low = loc.lower()
+        has_remote = "remote" in loc_low
+        target_locs = [t.lower() for t in criteria.get("location", [])]
+        has_us_match = any(t in loc_low for t in target_locs)
+        if not has_remote and not has_us_match and NON_US_LOCATION_RE.search(loc_low):
+            return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-location"]}
+
+    return None
+
+
+def score_job(job: Job, criteria: dict, model: str = FAST_MODEL) -> dict:
     prompt = SCORING_PROMPT.format(
         target_roles=", ".join(criteria["target_roles"]),
         required_skills=", ".join(criteria["required_skills"]),
@@ -66,7 +146,7 @@ def score_job(job: Job, criteria: dict) -> dict:
     last_err = None
     for attempt in range(4):
         try:
-            text = call_claude(prompt, model=MODEL)
+            text = call_claude(prompt, model=model)
             break
         except RuntimeError as e:
             last_err = e
@@ -89,21 +169,77 @@ def score_all_unscored():
     config = load_config()
     criteria = config["criteria"]
     session = get_session()
+    session.expire_on_commit = False
     try:
         unscored = session.query(Job).filter(Job.score.is_(None)).all()
-        scored_count = 0
+        prescreen_count = 0
+        to_score: list[Job] = []
         for job in unscored:
-            try:
-                result = score_job(job, criteria)
-                job.score = result["score"]
-                job.score_reasons = result.get("reasons", [])
-                job.red_flags = result.get("red_flags", [])
-                session.commit()
-                scored_count += 1
-                print(f"  [{scored_count}] {job.company} / {job.title}: {job.score}")
-            except Exception as e:
-                print(f"  FAILED {job.company} / {job.title}: {e}")
-                session.rollback()
-        print(f"LLM-scored {scored_count} jobs.")
+            pre = prescreen(job, criteria)
+            if pre is not None:
+                job.score = pre["score"]
+                job.score_reasons = pre["reasons"]
+                job.red_flags = pre["red_flags"]
+                prescreen_count += 1
+                tag = pre["red_flags"][0] if pre["red_flags"] else "prescreen"
+                print(f"  [prescreen] {job.company} / {job.title}: dropped ({tag})")
+                continue
+            to_score.append(job)
+        session.commit()
+
+        borderline: list[tuple[Job, float]] = []
+        scored_count = 0
+        total = len(to_score)
+        with ThreadPoolExecutor(max_workers=SCORING_WORKERS) as pool:
+            fut_to_job = {
+                pool.submit(score_job, j, criteria, FAST_MODEL): j for j in to_score
+            }
+            for fut in as_completed(fut_to_job):
+                job = fut_to_job[fut]
+                try:
+                    result = fut.result()
+                    job.score = result["score"]
+                    job.score_reasons = result.get("reasons", [])
+                    job.red_flags = result.get("red_flags", [])
+                    session.commit()
+                    scored_count += 1
+                    print(
+                        f"  [{scored_count}/{total} {FAST_MODEL}] {job.company} / {job.title}: "
+                        f"{job.score}"
+                    )
+                    if BORDERLINE_LOW <= result["score"] <= BORDERLINE_HIGH:
+                        borderline.append((job, result["score"]))
+                except Exception as e:
+                    print(f"  FAILED {job.company} / {job.title}: {e}")
+                    session.rollback()
+
+        rerank_count = 0
+        rerank_total = len(borderline)
+        with ThreadPoolExecutor(max_workers=SCORING_WORKERS) as pool:
+            fut_to_entry = {
+                pool.submit(score_job, j, criteria, JUDGE_MODEL): (j, hs)
+                for j, hs in borderline
+            }
+            for fut in as_completed(fut_to_entry):
+                job, haiku_score = fut_to_entry[fut]
+                try:
+                    result = fut.result()
+                    job.score = result["score"]
+                    job.score_reasons = result.get("reasons", [])
+                    job.red_flags = result.get("red_flags", [])
+                    session.commit()
+                    rerank_count += 1
+                    print(
+                        f"  [rerank {rerank_count}/{rerank_total} {JUDGE_MODEL}] "
+                        f"{job.company} / {job.title}: {haiku_score} -> {job.score}"
+                    )
+                except Exception as e:
+                    print(f"  FAILED rerank {job.company} / {job.title}: {e}")
+                    session.rollback()
+
+        print(
+            f"Prescreen-dropped {prescreen_count}; {FAST_MODEL}-scored {scored_count}; "
+            f"{JUDGE_MODEL}-reranked {rerank_count} borderline."
+        )
     finally:
         session.close()

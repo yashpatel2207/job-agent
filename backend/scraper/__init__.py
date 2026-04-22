@@ -1,10 +1,13 @@
 """Dispatch scrapers, dedupe against DB, return new jobs only."""
 import re
 import yaml
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from . import greenhouse, lever, ashby, workday
 from .base import ScrapedJob
 from db.models import Job, get_session
+
+SCRAPING_WORKERS = 10
 
 CONFIG_PATH = Path(__file__).parent.parent / "companies.yaml"
 
@@ -34,26 +37,35 @@ def load_config():
         return yaml.safe_load(f)
 
 
+def _scrape_one(c: dict) -> list[ScrapedJob]:
+    ats = c["ats"]
+    name = c["name"]
+    slug = c.get("slug")
+    print(f"Scraping {name} ({ats})...")
+    try:
+        if ats == "greenhouse":
+            return greenhouse.scrape(name, slug)
+        if ats == "lever":
+            return lever.scrape(name, slug)
+        if ats == "ashby":
+            return ashby.scrape(name, slug)
+        if ats == "workday":
+            return workday.scrape(name, c["tenant"], c["wd_num"], c["site"])
+        print(f"  unknown ATS: {ats}")
+        return []
+    except Exception as e:
+        print(f"  FAILED scraping {name} ({ats}): {e}")
+        return []
+
+
 def scrape_all() -> list[ScrapedJob]:
     config = load_config()
     all_jobs: list[ScrapedJob] = []
 
-    for c in config["companies"]:
-        ats = c["ats"]
-        name = c["name"]
-        slug = c.get("slug")
-        print(f"Scraping {name} ({ats})...")
-
-        if ats == "greenhouse":
-            all_jobs.extend(greenhouse.scrape(name, slug))
-        elif ats == "lever":
-            all_jobs.extend(lever.scrape(name, slug))
-        elif ats == "ashby":
-            all_jobs.extend(ashby.scrape(name, slug))
-        elif ats == "workday":
-            all_jobs.extend(workday.scrape(name, c["tenant"], c["wd_num"], c["site"]))
-        else:
-            print(f"  unknown ATS: {ats}")
+    with ThreadPoolExecutor(max_workers=SCRAPING_WORKERS) as pool:
+        futs = [pool.submit(_scrape_one, c) for c in config["companies"]]
+        for fut in as_completed(futs):
+            all_jobs.extend(fut.result())
 
     print(f"\nTotal scraped: {len(all_jobs)}")
     return all_jobs
