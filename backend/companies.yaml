@@ -142,12 +142,28 @@ companies:
 
 criteria:
   target_roles:
+    - Frontend Engineer
+    - Front-End Engineer
     - Senior Frontend Engineer
-    - Senior Software Engineer Frontend
     - Staff Frontend Engineer
-    - Senior Software Engineer
-    - Lead Frontend Engineer
     - Principal Frontend Engineer
+    - Lead Frontend Engineer
+    - UI Engineer
+    - Senior UI Engineer
+    - UI Developer
+    - Web Engineer
+    - Senior Web Engineer
+    - JavaScript Engineer
+    - TypeScript Engineer
+    - React Engineer
+    - Node.js Engineer
+    - Full Stack Engineer (JavaScript/TypeScript backend)
+    - Senior Full Stack Engineer (JavaScript/TypeScript backend)
+    - Staff Full Stack Engineer (JavaScript/TypeScript backend)
+    - Product Engineer
+    - Software Engineer, Frontend
+    - Software Engineer, Web
+    - Client Engineer
   required_skills:
     - JavaScript
     - TypeScript
@@ -175,18 +191,11 @@ criteria:
     - Georgia
     - Philadelphia
     - Pennsylvania
-    - Seattle
-    - Washington
-    - Boston
-    - Massachusetts
-    - Austin
     - Texas
-    - Chicago
-    - Illinois
-    - Hybrid DC
-    - Hybrid Bethesda
-    - Hybrid Maryland
-    - Hybrid Virginia
+    - DC
+    - Bethesda
+    - Maryland
+    - Virginia
   exclude:
     - crypto
     - web3

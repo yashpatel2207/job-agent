@@ -19,7 +19,16 @@ TITLE_EXCLUDE_RE = re.compile(
     r"product\s+manager|program\s+manager|"
     r"director|vp|head\s+of|chief|counsel|legal|finance|accountant|"
     r"hardware|mechanical|electrical|firmware|asic|rf\s|optical|"
-    r"ios|android|mobile|embedded|robotics|controls)\b",
+    r"ios|android|mobile|embedded|robotics|controls|"
+    r"back[-\s]?end|"
+    r"data\s+engineer|data\s+platform|"
+    r"ml\s+engineer|machine\s+learning|ai\s+engineer|ai/ml|"
+    r"devops|sre|site\s+reliability|"
+    r"security\s+engineer|network\s+engineer|systems\s+engineer|"
+    r"qa\s+engineer|test\s+engineer|automation\s+engineer|"
+    r"solutions?\s+engineer|forward\s+deployed|"
+    r"game\s+engineer|graphics\s+engineer|"
+    r"compiler\s+engineer|database\s+engineer)\b",
     re.I,
 )
 
