@@ -1,17 +1,13 @@
-"""Score jobs against user criteria using Claude."""
+"""Score jobs against user criteria using the multi-provider LLM dispatcher."""
 import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from db.models import Job, get_session
 from scraper import load_config
-from llm import call_claude
+from llm import call_llm
 
-FAST_MODEL = "haiku"
-JUDGE_MODEL = "sonnet"
-BORDERLINE_LOW = 5.0
-BORDERLINE_HIGH = 7.5
-SCORING_WORKERS = 3
+SCORING_WORKERS = 10
 
 NO_SPONSORSHIP_RE = re.compile(
     r"(no\s+(?:visa\s+)?sponsorship|"
@@ -99,7 +95,7 @@ Scoring guidance:
 
 
 def prescreen(job: Job, criteria: dict) -> dict | None:
-    """Cheap regex prefilter. Returns a score dict to hard-drop, or None to pass to Claude."""
+    """Cheap regex prefilter. Returns a score dict to hard-drop, or None to pass to the LLM."""
     jd = (job.jd_text or "")[:10000]
     hay = f"{job.title or ''}\n{jd}"
 
@@ -129,7 +125,7 @@ def prescreen(job: Job, criteria: dict) -> dict | None:
     return None
 
 
-def score_job(job: Job, criteria: dict, model: str = FAST_MODEL) -> dict:
+def score_job(job: Job, criteria: dict) -> dict:
     prompt = SCORING_PROMPT.format(
         target_roles=", ".join(criteria["target_roles"]),
         required_skills=", ".join(criteria["required_skills"]),
@@ -145,14 +141,14 @@ def score_job(job: Job, criteria: dict, model: str = FAST_MODEL) -> dict:
     )
 
     last_err = None
-    for attempt in range(4):
+    for attempt in range(3):
         try:
-            text = call_claude(prompt, model=model)
+            text = call_llm(prompt, want_json=True)
             break
         except RuntimeError as e:
             last_err = e
             wait = 2 ** attempt
-            print(f"    claude CLI error, retrying in {wait}s...")
+            print(f"    LLM dispatcher error, retrying in {wait}s...")
             time.sleep(wait)
     else:
         raise last_err
@@ -188,12 +184,11 @@ def score_all_unscored():
             to_score.append(job)
         session.commit()
 
-        borderline: list[tuple[Job, float]] = []
         scored_count = 0
         total = len(to_score)
         with ThreadPoolExecutor(max_workers=SCORING_WORKERS) as pool:
             fut_to_job = {
-                pool.submit(score_job, j, criteria, FAST_MODEL): j for j in to_score
+                pool.submit(score_job, j, criteria): j for j in to_score
             }
             for fut in as_completed(fut_to_job):
                 job = fut_to_job[fut]
@@ -205,42 +200,13 @@ def score_all_unscored():
                     session.commit()
                     scored_count += 1
                     print(
-                        f"  [{scored_count}/{total} {FAST_MODEL}] {job.company} / {job.title}: "
+                        f"  [{scored_count}/{total}] {job.company} / {job.title}: "
                         f"{job.score}"
                     )
-                    if BORDERLINE_LOW <= result["score"] <= BORDERLINE_HIGH:
-                        borderline.append((job, result["score"]))
                 except Exception as e:
                     print(f"  FAILED {job.company} / {job.title}: {e}")
                     session.rollback()
 
-        rerank_count = 0
-        rerank_total = len(borderline)
-        with ThreadPoolExecutor(max_workers=SCORING_WORKERS) as pool:
-            fut_to_entry = {
-                pool.submit(score_job, j, criteria, JUDGE_MODEL): (j, hs)
-                for j, hs in borderline
-            }
-            for fut in as_completed(fut_to_entry):
-                job, haiku_score = fut_to_entry[fut]
-                try:
-                    result = fut.result()
-                    job.score = result["score"]
-                    job.score_reasons = result.get("reasons", [])
-                    job.red_flags = result.get("red_flags", [])
-                    session.commit()
-                    rerank_count += 1
-                    print(
-                        f"  [rerank {rerank_count}/{rerank_total} {JUDGE_MODEL}] "
-                        f"{job.company} / {job.title}: {haiku_score} -> {job.score}"
-                    )
-                except Exception as e:
-                    print(f"  FAILED rerank {job.company} / {job.title}: {e}")
-                    session.rollback()
-
-        print(
-            f"Prescreen-dropped {prescreen_count}; {FAST_MODEL}-scored {scored_count}; "
-            f"{JUDGE_MODEL}-reranked {rerank_count} borderline."
-        )
+        print(f"Prescreen-dropped {prescreen_count}; scored {scored_count}.")
     finally:
         session.close()

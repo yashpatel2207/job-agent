@@ -62,12 +62,20 @@ Edit `backend/companies.yaml`. Each company needs a `slug` that matches its ATS 
 
 Also set your criteria: target roles, required skills, comp floor, location, and exclusions.
 
-### 4. Get an Anthropic API key
+### 4. Get three free LLM API keys
 
-Sign up at https://console.anthropic.com, create an API key, and export it:
+The pipeline round-robins across three free-tier providers (Gemini, Groq, Cerebras) so no single provider's rate limit throttles a run. Each is free to obtain, no credit card:
+
+- **Gemini 2.0 Flash** — sign up at https://aistudio.google.com, create a key.
+- **Groq** (Llama 3.3 70B) — sign up at https://console.groq.com, create a key.
+- **Cerebras** (Llama 3.3 70B) — sign up at https://cloud.cerebras.ai, create a key.
+
+Export all three:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+export GEMINI_API_KEY=...
+export GROQ_API_KEY=...
+export CEREBRAS_API_KEY=...
 ```
 
 ### 5. Seed the database and run the pipeline once
@@ -124,7 +132,9 @@ Create a free Postgres database. Grab the connection string.
 ### GitHub Actions
 
 Set these repo secrets:
-- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `GROQ_API_KEY`
+- `CEREBRAS_API_KEY`
 - `DATABASE_URL` (Postgres connection string)
 - `PROFILE_JSON` (paste the full content of your profile.json)
 - `MASTER_RESUME_JSON` (paste the full content of your master_resume.json)

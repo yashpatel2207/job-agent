@@ -23,23 +23,6 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt
 
-      - name: Set up Node (for claude CLI)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install claude CLI
-        run: npm install -g @anthropic-ai/claude-code
-
-      - name: Restore claude credentials from secret
-        env:
-          CLAUDE_CREDENTIALS_JSON: ${{ secrets.CLAUDE_CREDENTIALS_JSON }}
-        run: |
-          mkdir -p "$HOME/.claude"
-          printf '%s' "$CLAUDE_CREDENTIALS_JSON" > "$HOME/.claude/.credentials.json"
-          chmod 600 "$HOME/.claude/.credentials.json"
-          claude auth status
-
       - name: Write profile + resume from secrets
         env:
           PROFILE_JSON: ${{ secrets.PROFILE_JSON }}
@@ -56,6 +39,9 @@ jobs:
       - name: Run pipeline
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
         run: python main.py
 
       - name: Upload tailored resumes
