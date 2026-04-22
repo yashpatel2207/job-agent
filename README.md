@@ -82,6 +82,13 @@ This scrapes all companies, scores new jobs, and generates tailored resumes. Fir
 
 ### 6. Start the local API and dashboard
 
+Shortcut (starts both, Ctrl+C stops both):
+```bash
+./dev.sh
+```
+
+Or start them separately:
+
 Terminal 1 (API):
 ```bash
 cd backend
