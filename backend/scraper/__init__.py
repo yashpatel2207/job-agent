@@ -1,4 +1,5 @@
 """Dispatch scrapers, dedupe against DB, return new jobs only."""
+import re
 import yaml
 from pathlib import Path
 from . import greenhouse, lever, ashby, workday
@@ -6,6 +7,26 @@ from .base import ScrapedJob
 from db.models import Job, get_session
 
 CONFIG_PATH = Path(__file__).parent.parent / "companies.yaml"
+
+TITLE_INCLUDE_RE = re.compile(r"\b(engineer|engineering|developer|swe|programmer|architect)\b", re.I)
+TITLE_EXCLUDE_RE = re.compile(
+    r"\b(intern|internship|apprentice|new\s*grad|graduate|entry[-\s]level|"
+    r"sales|marketing|recruiter|recruiting|customer|support|success|"
+    r"analyst|designer|researcher|scientist|"
+    r"product\s+manager|program\s+manager|"
+    r"director|vp|head\s+of|chief|counsel|legal|finance|accountant|"
+    r"hardware|mechanical|electrical|firmware|asic|rf\s|optical|"
+    r"ios|android|mobile|embedded|robotics|controls)\b",
+    re.I,
+)
+
+
+def title_is_relevant(title: str) -> bool:
+    if not TITLE_INCLUDE_RE.search(title):
+        return False
+    if TITLE_EXCLUDE_RE.search(title):
+        return False
+    return True
 
 
 def load_config():
@@ -45,8 +66,16 @@ def filter_new(jobs: list[ScrapedJob]) -> list[ScrapedJob]:
     finally:
         session.close()
 
-    new = [j for j in jobs if j.id not in existing_ids]
-    print(f"New jobs: {len(new)}")
+    new = []
+    dropped_titles = 0
+    for j in jobs:
+        if j.id in existing_ids:
+            continue
+        if not title_is_relevant(j.title):
+            dropped_titles += 1
+            continue
+        new.append(j)
+    print(f"New jobs: {len(new)} (dropped {dropped_titles} by title filter)")
     return new
 
 

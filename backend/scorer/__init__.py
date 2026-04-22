@@ -1,24 +1,11 @@
 """Score jobs against user criteria using Claude."""
 import json
-import re
 import time
 from db.models import Job, get_session
 from scraper import load_config
 from llm import call_claude
 
 MODEL = "sonnet"
-
-TITLE_INCLUDE_RE = re.compile(r"\b(engineer|engineering|developer|swe|programmer|architect)\b", re.I)
-TITLE_EXCLUDE_RE = re.compile(
-    r"\b(intern|internship|apprentice|new\s*grad|graduate|entry[-\s]level|"
-    r"sales|marketing|recruiter|recruiting|customer|support|success|"
-    r"analyst|designer|researcher|scientist|"
-    r"product\s+manager|program\s+manager|"
-    r"director|vp|head\s+of|chief|counsel|legal|finance|accountant|"
-    r"hardware|mechanical|electrical|firmware|asic|rf\s|optical|"
-    r"ios|android|mobile|embedded|robotics|controls)\b",
-    re.I,
-)
 
 SCORING_PROMPT = """You are evaluating a job posting for a candidate with these criteria:
 
@@ -98,32 +85,14 @@ def score_job(job: Job, criteria: dict) -> dict:
     return json.loads(text)
 
 
-def title_prefilter(title: str) -> str | None:
-    """Return a reason string if the title should skip LLM scoring, else None."""
-    if not TITLE_INCLUDE_RE.search(title):
-        return "title-no-engineering-keyword"
-    if TITLE_EXCLUDE_RE.search(title):
-        return "title-excluded-keyword"
-    return None
-
-
 def score_all_unscored():
     config = load_config()
     criteria = config["criteria"]
     session = get_session()
     try:
         unscored = session.query(Job).filter(Job.score.is_(None)).all()
-        skipped = 0
         scored_count = 0
         for job in unscored:
-            skip_reason = title_prefilter(job.title)
-            if skip_reason:
-                job.score = 0.0
-                job.score_reasons = [skip_reason]
-                job.red_flags = []
-                session.commit()
-                skipped += 1
-                continue
             try:
                 result = score_job(job, criteria)
                 job.score = result["score"]
@@ -135,6 +104,6 @@ def score_all_unscored():
             except Exception as e:
                 print(f"  FAILED {job.company} / {job.title}: {e}")
                 session.rollback()
-        print(f"Title pre-filter skipped {skipped} jobs. LLM-scored {scored_count} jobs.")
+        print(f"LLM-scored {scored_count} jobs.")
     finally:
         session.close()

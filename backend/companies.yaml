@@ -67,12 +67,12 @@ companies:
   - name: Asana
     slug: asana
     ats: greenhouse
-  - name: Zendesk
-    slug: zendesk
-    ats: workday
-    tenant: zendesk
-    wd_num: 1
-    site: zendesk
+  # - name: Zendesk
+  #   slug: zendesk
+  #   ats: workday
+  #   tenant: zendesk
+  #   wd_num: 1
+  #   site: zendesk
   - name: Squarespace
     slug: squarespace
     ats: greenhouse
@@ -127,18 +127,18 @@ companies:
     slug: sofi
     ats: greenhouse
 
-  - name: Salesforce
-    slug: salesforce
-    ats: workday
-    tenant: salesforce
-    wd_num: 12
-    site: External_Career_Site
-  - name: Workday
-    slug: workday
-    ats: workday
-    tenant: workday
-    wd_num: 5
-    site: Workday
+  # - name: Salesforce
+  #   slug: salesforce
+  #   ats: workday
+  #   tenant: salesforce
+  #   wd_num: 12
+  #   site: External_Career_Site
+  # - name: Workday
+  #   slug: workday
+  #   ats: workday
+  #   tenant: workday
+  #   wd_num: 5
+  #   site: Workday
 
 criteria:
   target_roles:
