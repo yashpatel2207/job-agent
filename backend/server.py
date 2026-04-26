@@ -2,14 +2,21 @@
 
 Runs on your laptop (for prefill access) or can be deployed for read-only queries.
 """
+import os
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from threading import Thread
 
-from db.models import Job, Profile, MasterResume, get_session, init_db
+import requests
+
+from db.models import Job, Profile, MasterResume, Settings, get_session, init_db
 from prefill import prefill
+
+GITHUB_REPO = os.getenv("GITHUB_REPO", "yashpatel2207/job-agent")
+GITHUB_WORKFLOW_FILE = os.getenv("GITHUB_WORKFLOW_FILE", "daily-scrape.yml")
+GITHUB_REF = os.getenv("GITHUB_REF", "master")
 
 app = FastAPI(title="Job Agent API")
 
@@ -117,6 +124,98 @@ def trigger_prefill(job_id: str):
         return {"ok": True, "message": "Browser opening..."}
     finally:
         session.close()
+
+
+def _gh_headers():
+    token = os.environ.get("GITHUB_TOKEN")
+    if not token:
+        raise HTTPException(500, "GITHUB_TOKEN not set in backend env")
+    return {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+
+def _is_paused() -> bool:
+    s = get_session()
+    try:
+        row = s.query(Settings).filter(Settings.key == "pipeline_paused").first()
+        return bool(row and row.value == "true")
+    finally:
+        s.close()
+
+
+def _set_paused(paused: bool):
+    s = get_session()
+    try:
+        row = s.query(Settings).filter(Settings.key == "pipeline_paused").first()
+        if row:
+            row.value = "true" if paused else "false"
+        else:
+            s.add(Settings(key="pipeline_paused", value="true" if paused else "false"))
+        s.commit()
+    finally:
+        s.close()
+
+
+@app.get("/api/cron/status")
+def cron_status():
+    """Returns pause state plus recent run info from GitHub."""
+    paused = _is_paused()
+    runs = []
+    try:
+        r = requests.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{GITHUB_WORKFLOW_FILE}/runs",
+            headers=_gh_headers(),
+            params={"per_page": 5},
+            timeout=10,
+        )
+        if r.ok:
+            for run in r.json().get("workflow_runs", []):
+                runs.append({
+                    "id": run["id"],
+                    "status": run["status"],
+                    "conclusion": run["conclusion"],
+                    "event": run["event"],
+                    "created_at": run["created_at"],
+                    "updated_at": run["updated_at"],
+                    "html_url": run["html_url"],
+                })
+    except (requests.RequestException, HTTPException):
+        pass
+    in_progress = next((r for r in runs if r["status"] in ("in_progress", "queued", "waiting")), None)
+    last_completed = next((r for r in runs if r["status"] == "completed"), None)
+    return {
+        "paused": paused,
+        "in_progress": in_progress,
+        "last_run": last_completed,
+        "recent_runs": runs,
+    }
+
+
+@app.post("/api/cron/trigger")
+def cron_trigger():
+    """Fire a manual workflow_dispatch run (bypasses pause flag)."""
+    r = requests.post(
+        f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{GITHUB_WORKFLOW_FILE}/dispatches",
+        headers=_gh_headers(),
+        json={"ref": GITHUB_REF},
+        timeout=10,
+    )
+    if not r.ok:
+        raise HTTPException(r.status_code, f"GitHub API: {r.text[:200]}")
+    return {"ok": True, "message": "Run queued. Refresh in a few seconds."}
+
+
+class PauseToggle(BaseModel):
+    paused: bool
+
+
+@app.post("/api/cron/pause")
+def cron_pause(payload: PauseToggle):
+    _set_paused(payload.paused)
+    return {"ok": True, "paused": payload.paused}
 
 
 @app.get("/api/stats")

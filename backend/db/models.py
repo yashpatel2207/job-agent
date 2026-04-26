@@ -49,6 +49,14 @@ class MasterResume(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class Settings(Base):
+    __tablename__ = "settings"
+
+    key = Column(String, primary_key=True)
+    value = Column(String)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./job_agent.db")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

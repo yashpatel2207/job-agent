@@ -81,3 +81,43 @@ export async function triggerPrefill(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/jobs/${id}/prefill`, { method: "POST" });
   if (!res.ok) throw new Error("Failed to trigger prefill");
 }
+
+export interface CronRun {
+  id: number;
+  status: string;
+  conclusion: string | null;
+  event: string;
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+}
+
+export interface CronStatus {
+  paused: boolean;
+  in_progress: CronRun | null;
+  last_run: CronRun | null;
+  recent_runs: CronRun[];
+}
+
+export async function fetchCronStatus(): Promise<CronStatus> {
+  const res = await fetch(`${API_URL}/api/cron/status`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch cron status");
+  return res.json();
+}
+
+export async function triggerCronRun(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/cron/trigger`, { method: "POST" });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to trigger run");
+  }
+}
+
+export async function setCronPaused(paused: boolean): Promise<void> {
+  const res = await fetch(`${API_URL}/api/cron/pause`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paused }),
+  });
+  if (!res.ok) throw new Error("Failed to update pause state");
+}

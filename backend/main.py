@@ -12,10 +12,22 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from db.models import init_db
+from db.models import Settings, get_session, init_db
 from scraper import scrape_all, filter_new, save_jobs
 from scorer import score_all_unscored
 from tailor import tailor_all_pending
+
+
+def is_paused() -> bool:
+    """Pause flag only blocks scheduled runs; manual triggers always proceed."""
+    if os.environ.get("MANUAL_TRIGGER"):
+        return False
+    s = get_session()
+    try:
+        row = s.query(Settings).filter(Settings.key == "pipeline_paused").first()
+        return bool(row and row.value == "true")
+    finally:
+        s.close()
 
 
 def backup_db():
@@ -42,6 +54,11 @@ def main():
 
     backup_db()
     init_db()
+
+    if is_paused():
+        print("\nPipeline is paused. Skipping scheduled run.")
+        print("Use 'Run now' from the dashboard to override.")
+        return 0
 
     print("\n[1/3] Scraping...")
     scraped = scrape_all()

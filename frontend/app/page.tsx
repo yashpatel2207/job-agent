@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchJobs, fetchStats, Job, Stats } from "@/lib/api";
 import { JobCard } from "@/components/JobCard";
 import { StatCard } from "@/components/StatCard";
+import { CronControlPanel } from "@/components/CronControlPanel";
 
 export default function QueuePage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -60,6 +61,8 @@ export default function QueuePage() {
           </select>
         </div>
       </div>
+
+      <CronControlPanel />
 
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
