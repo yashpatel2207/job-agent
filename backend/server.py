@@ -3,6 +3,10 @@
 Runs on your laptop (for prefill access) or can be deployed for read-only queries.
 """
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -164,6 +168,7 @@ def cron_status():
     """Returns pause state plus recent run info from GitHub."""
     paused = _is_paused()
     runs = []
+    gh_error: str | None = None
     try:
         r = requests.get(
             f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{GITHUB_WORKFLOW_FILE}/runs",
@@ -182,8 +187,12 @@ def cron_status():
                     "updated_at": run["updated_at"],
                     "html_url": run["html_url"],
                 })
-    except (requests.RequestException, HTTPException):
-        pass
+        else:
+            gh_error = f"GitHub API {r.status_code}: {r.text[:120]}"
+    except requests.RequestException as e:
+        gh_error = f"GitHub API request failed: {e}"
+    except HTTPException as e:
+        gh_error = e.detail
     in_progress = next((r for r in runs if r["status"] in ("in_progress", "queued", "waiting")), None)
     last_completed = next((r for r in runs if r["status"] == "completed"), None)
     return {
@@ -191,6 +200,7 @@ def cron_status():
         "in_progress": in_progress,
         "last_run": last_completed,
         "recent_runs": runs,
+        "gh_error": gh_error,
     }
 
 

@@ -91,7 +91,19 @@ export function CronControlPanel() {
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6 text-sm">
         <p className="text-amber-700 dark:text-amber-400">Pipeline status unavailable</p>
         <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-          {error || "Backend not reachable. Make sure GITHUB_TOKEN and GITHUB_REPO are set."}
+          {error || "Backend not reachable. Is uvicorn running on :8000?"}
+        </p>
+      </div>
+    );
+  }
+
+  if (status.gh_error) {
+    return (
+      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6 text-sm">
+        <p className="text-amber-700 dark:text-amber-400">GitHub connection issue</p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 break-all">{status.gh_error}</p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">
+          Check GITHUB_TOKEN and GITHUB_REPO in backend/.env, then restart the backend.
         </p>
       </div>
     );

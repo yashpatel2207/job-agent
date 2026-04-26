@@ -12,6 +12,10 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from db.models import Settings, get_session, init_db
 from scraper import scrape_all, filter_new, save_jobs
 from scorer import score_all_unscored

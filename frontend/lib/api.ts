@@ -97,6 +97,7 @@ export interface CronStatus {
   in_progress: CronRun | null;
   last_run: CronRun | null;
   recent_runs: CronRun[];
+  gh_error: string | null;
 }
 
 export async function fetchCronStatus(): Promise<CronStatus> {
