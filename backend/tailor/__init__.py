@@ -9,7 +9,9 @@ from pathlib import Path
 
 from docx import Document
 from docx.shared import Pt, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 from db.models import Job, MasterResume, get_session
 from llm import call_llm_fast
@@ -129,6 +131,37 @@ def tailor_resume(job: Job, master: dict) -> dict:
     }
 
 
+def _is_real(v) -> bool:
+    return bool(v) and not str(v).startswith("REPLACE")
+
+
+def _section_header(doc, text: str):
+    p = doc.add_paragraph()
+    run = p.add_run(text.upper())
+    run.bold = True
+    run.font.size = Pt(11)
+    pPr = p._p.get_or_add_pPr()
+    pBdr = OxmlElement("w:pBdr")
+    bottom = OxmlElement("w:bottom")
+    bottom.set(qn("w:val"), "single")
+    bottom.set(qn("w:sz"), "6")
+    bottom.set(qn("w:color"), "808080")
+    pBdr.append(bottom)
+    pPr.append(pBdr)
+    p.paragraph_format.space_before = Pt(10)
+    p.paragraph_format.space_after = Pt(4)
+
+
+def _right_aligned_line(doc, left_text: str, right_text: str, *, bold_left: bool, space_before: int, space_after: int):
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(space_before)
+    p.paragraph_format.space_after = Pt(space_after)
+    p.paragraph_format.tab_stops.add_tab_stop(Inches(7.0), WD_TAB_ALIGNMENT.RIGHT)
+    left_run = p.add_run(left_text)
+    left_run.bold = bold_left
+    p.add_run(f"\t{right_text}")
+
+
 def render_docx(tailored: dict, master: dict, output_path: Path):
     doc = Document()
 
@@ -144,49 +177,67 @@ def render_docx(tailored: dict, master: dict, output_path: Path):
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(2)
     name_run = p.add_run(master["personal"]["name"])
     name_run.bold = True
     name_run.font.size = Pt(18)
 
     contact = doc.add_paragraph()
     contact.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    contact.paragraph_format.space_after = Pt(0)
     p_info = master["personal"]
-    contact_text = f"{p_info['location']} · {p_info['email']} · {p_info['phone']} · {p_info.get('linkedin', '')} · {p_info.get('github', '')}"
-    contact.add_run(contact_text).font.size = Pt(9.5)
+    contact_parts = [
+        v for v in (
+            p_info.get("location"),
+            p_info.get("email"),
+            p_info.get("phone"),
+            p_info.get("linkedin"),
+            p_info.get("github"),
+            p_info.get("portfolio"),
+        ) if _is_real(v)
+    ]
+    contact.add_run(" · ".join(contact_parts)).font.size = Pt(9.5)
 
-    doc.add_paragraph()
-    summary_head = doc.add_paragraph()
-    summary_head.add_run("SUMMARY").bold = True
-    doc.add_paragraph(tailored["summary"])
+    _section_header(doc, "Summary")
+    summary_p = doc.add_paragraph(tailored["summary"])
+    summary_p.paragraph_format.space_after = Pt(2)
 
-    exp_head = doc.add_paragraph()
-    exp_head.add_run("EXPERIENCE").bold = True
-
+    _section_header(doc, "Experience")
     for role in tailored["experience"]:
-        role_p = doc.add_paragraph()
-        role_run = role_p.add_run(f"{role['role']} · {role['company']}")
-        role_run.bold = True
-        role_p.add_run(f"    {role['dates']}")
-
+        _right_aligned_line(
+            doc,
+            f"{role['role']}, {role['company']}",
+            role["dates"],
+            bold_left=True,
+            space_before=6,
+            space_after=2,
+        )
         for bullet in role["bullets"]:
             b = doc.add_paragraph(bullet, style="List Bullet")
             b.paragraph_format.space_after = Pt(2)
 
-    skills_head = doc.add_paragraph()
-    skills_head.add_run("SKILLS").bold = True
     skills_list = master.get("skills", {})
-    for cat, items in skills_list.items():
-        sp = doc.add_paragraph()
-        sp.add_run(f"{cat.title()}: ").bold = True
-        sp.add_run(", ".join(items))
+    if skills_list:
+        _section_header(doc, "Skills")
+        for cat, items in skills_list.items():
+            if not items:
+                continue
+            sp = doc.add_paragraph()
+            sp.paragraph_format.space_after = Pt(2)
+            sp.add_run(f"{cat.replace('_', ' ').title()}: ").bold = True
+            sp.add_run(", ".join(items))
 
     if master.get("education"):
-        edu_head = doc.add_paragraph()
-        edu_head.add_run("EDUCATION").bold = True
+        _section_header(doc, "Education")
         for edu in master["education"]:
-            ep = doc.add_paragraph()
-            ep.add_run(f"{edu['degree']}, {edu['school']}").bold = True
-            ep.add_run(f"    {edu['dates']}")
+            _right_aligned_line(
+                doc,
+                f"{edu['degree']}, {edu['school']}",
+                edu["dates"],
+                bold_left=True,
+                space_before=4,
+                space_after=2,
+            )
 
     doc.save(output_path)
 
