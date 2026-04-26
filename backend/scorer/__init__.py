@@ -4,10 +4,10 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from db.models import Job, get_session
-from scraper import load_config
+from scraper import load_config, TITLE_EXCLUDE_RE, TITLE_INCLUDE_RE
 from llm import call_llm
 
-SCORING_WORKERS = 10
+SCORING_WORKERS = 4
 
 NO_SPONSORSHIP_RE = re.compile(
     r"(no\s+(?:visa\s+)?sponsorship|"
@@ -97,7 +97,11 @@ Scoring guidance:
 def prescreen(job: Job, criteria: dict) -> dict | None:
     """Cheap regex prefilter. Returns a score dict to hard-drop, or None to pass to the LLM."""
     jd = (job.jd_text or "")[:10000]
-    hay = f"{job.title or ''}\n{jd}"
+    title = job.title or ""
+    hay = f"{title}\n{jd}"
+
+    if not TITLE_INCLUDE_RE.search(title) or TITLE_EXCLUDE_RE.search(title):
+        return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-title"]}
 
     exclude_terms = [t.strip() for t in criteria.get("exclude", []) if t.strip()]
     if exclude_terms:
@@ -121,6 +125,12 @@ def prescreen(job: Job, criteria: dict) -> dict | None:
         has_us_match = any(t in loc_low for t in target_locs)
         if not has_remote and not has_us_match and NON_US_LOCATION_RE.search(loc_low):
             return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-location"]}
+
+    required = [s.strip().lower() for s in criteria.get("required_skills", []) if s.strip()]
+    if required and jd:
+        jd_low = jd.lower()
+        if not any(re.search(r"\b" + re.escape(s) + r"\b", jd_low) for s in required):
+            return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-no-skill-match"]}
 
     return None
 

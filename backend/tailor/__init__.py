@@ -12,9 +12,9 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from db.models import Job, MasterResume, get_session
-from llm import call_llm
+from llm import call_llm_fast
 
-TAILOR_WORKERS = 8
+TAILOR_WORKERS = 4
 MAX_BULLETS_PER_ROLE = 5
 MIN_BULLETS_PER_ROLE = 2
 MAX_EMPHASIZED_SKILLS = 8
@@ -85,7 +85,7 @@ def _write_summary(job: Job, original_summary: str) -> str:
     last_err = None
     for attempt in range(3):
         try:
-            text = call_llm(prompt, want_json=False).strip()
+            text = call_llm_fast(prompt, want_json=False).strip()
             if text.startswith('"') and text.endswith('"'):
                 text = text[1:-1].strip()
             return text
