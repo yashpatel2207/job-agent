@@ -16,7 +16,7 @@ TITLE_EXCLUDE_RE = re.compile(
     r"\b(intern|internship|apprentice|new\s*grad|graduate|entry[-\s]level|"
     r"sales|marketing|recruiter|recruiting|customer|support|success|"
     r"analyst|designer|researcher|scientist|"
-    r"product\s+manager|program\s+manager|"
+    r"product\s+manager|program\s+manager|managers?|"
     r"director|vp|head\s+of|chief|counsel|legal|finance|accountant|"
     r"hardware|mechanical|electrical|firmware|asic|rf\s|optical|"
     r"ios|android|mobile|embedded|robotics|controls|"

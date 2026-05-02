@@ -1,26 +1,39 @@
-export function MatchBadge({ score }: { score: number | null }) {
+export function MatchBadge({
+  score,
+  size = "md",
+}: {
+  score: number | null;
+  size?: "sm" | "md" | "lg";
+}) {
   if (score === null) {
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] font-medium">
-        pending
-      </span>
-    );
+    return <span className="text-[12px] text-mute font-medium">Pending</span>;
   }
 
-  const rounded = score.toFixed(1);
-  let classes = "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]";
-
+  let tone = "text-slate";
+  let labelText = "Match";
   if (score >= 8.0) {
-    classes = "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200";
+    tone = "text-teal";
+    labelText = "Strong match";
   } else if (score >= 7.0) {
-    classes = "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-200";
-  } else {
-    classes = "bg-stone-100 text-stone-600 dark:bg-stone-900 dark:text-stone-400";
+    tone = "text-amber";
+    labelText = "Worth a look";
   }
+
+  const sizeClass =
+    size === "lg"
+      ? "text-[72px] leading-none"
+      : size === "sm"
+      ? "text-[24px] leading-none"
+      : "text-[40px] leading-none";
 
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${classes}`}>
-      {rounded} match
-    </span>
+    <div className="flex items-baseline gap-2.5 shrink-0">
+      <span className={`font-semibold tabular-nums tracking-tightest ${sizeClass} ${tone}`}>
+        {score.toFixed(1)}
+      </span>
+      <span className={`text-[12px] font-medium ${tone === "text-slate" ? "text-slate" : tone}`}>
+        {labelText}
+      </span>
+    </div>
   );
 }

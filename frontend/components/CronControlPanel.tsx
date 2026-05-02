@@ -21,11 +21,37 @@ function timeAgo(iso: string | null): string {
 }
 
 function conclusionLabel(run: CronStatus["last_run"]): { text: string; className: string } {
-  if (!run) return { text: "No runs yet", className: "text-[hsl(var(--muted-foreground))]" };
-  if (run.conclusion === "success") return { text: "succeeded", className: "text-emerald-600 dark:text-emerald-400" };
-  if (run.conclusion === "failure") return { text: "failed", className: "text-red-600 dark:text-red-400" };
-  if (run.conclusion === "cancelled") return { text: "cancelled", className: "text-[hsl(var(--muted-foreground))]" };
-  return { text: run.conclusion || "unknown", className: "text-[hsl(var(--muted-foreground))]" };
+  if (!run) return { text: "no runs yet", className: "text-slate" };
+  if (run.conclusion === "success") return { text: "succeeded", className: "text-green" };
+  if (run.conclusion === "failure") return { text: "failed", className: "text-red" };
+  if (run.conclusion === "cancelled") return { text: "cancelled", className: "text-slate" };
+  return { text: run.conclusion || "unknown", className: "text-slate" };
+}
+
+function StatusPill({
+  tone,
+  label,
+  pulsing = false,
+}: {
+  tone: "blue" | "amber" | "green";
+  label: string;
+  pulsing?: boolean;
+}) {
+  const map = {
+    blue: "bg-blue/10 text-blue",
+    amber: "bg-amber/10 text-amber",
+    green: "bg-green/10 text-green",
+  } as const;
+  return (
+    <span
+      className={`inline-flex items-center gap-2 text-[12px] font-medium px-2.5 py-1 rounded-pill ${map[tone]} ${
+        pulsing ? "animate-pulse-soft" : ""
+      }`}
+    >
+      <span className={`block w-1.5 h-1.5 rounded-full bg-current`} />
+      {label}
+    </span>
+  );
 }
 
 export function CronControlPanel() {
@@ -80,17 +106,17 @@ export function CronControlPanel() {
 
   if (loading) {
     return (
-      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6 text-sm text-[hsl(var(--muted-foreground))]">
-        Loading pipeline status...
+      <div className="card p-5 mb-8 text-[13px] text-slate">
+        Loading pipeline status…
       </div>
     );
   }
 
   if (error || !status) {
     return (
-      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6 text-sm">
-        <p className="text-amber-700 dark:text-amber-400">Pipeline status unavailable</p>
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+      <div className="card p-5 mb-8">
+        <p className="text-[13px] font-semibold text-amber mb-1">Pipeline status unavailable</p>
+        <p className="text-[13px] text-slate">
           {error || "Backend not reachable. Is uvicorn running on :8000?"}
         </p>
       </div>
@@ -99,10 +125,10 @@ export function CronControlPanel() {
 
   if (status.gh_error) {
     return (
-      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6 text-sm">
-        <p className="text-amber-700 dark:text-amber-400">GitHub connection issue</p>
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1 break-all">{status.gh_error}</p>
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">
+      <div className="card p-5 mb-8">
+        <p className="text-[13px] font-semibold text-amber mb-1">GitHub connection issue</p>
+        <p className="text-[13px] text-slate break-all">{status.gh_error}</p>
+        <p className="text-[12px] text-mute mt-2">
           Check GITHUB_TOKEN and GITHUB_REPO in backend/.env, then restart the backend.
         </p>
       </div>
@@ -113,35 +139,43 @@ export function CronControlPanel() {
   const inProgress = status.in_progress;
 
   return (
-    <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-4 mb-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-sm font-medium">Nightly pipeline</h2>
-            {status.paused && (
-              <span className="text-xs px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                paused
-              </span>
-            )}
-            {inProgress && (
-              <span className="text-xs px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                running now
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">
+    <section
+      className="card p-5 sm:p-6 mb-12 reveal"
+      style={{ animationDelay: "0.08s" }}
+    >
+      <div className="flex items-center justify-between gap-6 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
+          <h2 className="text-[15px] font-semibold text-ink tracking-snug">
+            Nightly pipeline
+          </h2>
+
+          {status.paused && <StatusPill tone="amber" label="Paused" />}
+          {inProgress && <StatusPill tone="blue" label="Running" pulsing />}
+          {!status.paused && !inProgress && <StatusPill tone="green" label="Armed" />}
+
+          <p className="text-[13px] text-slate">
             {inProgress ? (
               <>
-                Started {timeAgo(inProgress.created_at)} via {inProgress.event} —{" "}
-                <a href={inProgress.html_url} target="_blank" rel="noreferrer" className="underline">
+                Started {timeAgo(inProgress.created_at)} via {inProgress.event} ·{" "}
+                <a
+                  href={inProgress.html_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue hover:underline"
+                >
                   view on GitHub
                 </a>
               </>
             ) : status.last_run ? (
               <>
-                Last run <span className={last.className}>{last.text}</span> {timeAgo(status.last_run.updated_at)}
-                {" · "}
-                <a href={status.last_run.html_url} target="_blank" rel="noreferrer" className="underline">
+                Last run <span className={`font-medium ${last.className}`}>{last.text}</span>{" "}
+                {timeAgo(status.last_run.updated_at)} ·{" "}
+                <a
+                  href={status.last_run.html_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue hover:underline"
+                >
                   view on GitHub
                 </a>
               </>
@@ -155,19 +189,19 @@ export function CronControlPanel() {
           <button
             onClick={handleTrigger}
             disabled={acting || !!inProgress}
-            className="text-sm font-medium bg-[hsl(var(--foreground))] text-[hsl(var(--background))] px-3 py-1.5 rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-primary"
           >
-            {inProgress ? "Already running" : acting ? "Working..." : "Run now"}
+            {inProgress ? "Already running" : acting ? "Working…" : "Run now"}
           </button>
           <button
             onClick={handleTogglePause}
             disabled={acting}
-            className="text-sm px-3 py-1.5 rounded-md border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] disabled:opacity-40"
+            className="btn-ghost"
           >
-            {status.paused ? "Resume nightly" : "Pause nightly"}
+            {status.paused ? "Resume" : "Pause"}
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

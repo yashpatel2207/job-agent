@@ -1,8 +1,26 @@
-export function StatCard({ label, value }: { label: string; value: string | number }) {
+export function StatCard({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+}) {
   return (
-    <div className="bg-[hsl(var(--muted))] rounded-lg px-4 py-3">
-      <p className="text-xs text-[hsl(var(--muted-foreground))] mb-1">{label}</p>
-      <p className="text-2xl font-medium">{value}</p>
+    <div
+      className={`px-7 py-7 border-r border-hairline last:border-r-0 flex flex-col gap-2 ${
+        accent ? "bg-mint" : ""
+      }`}
+    >
+      <p className="label">{label}</p>
+      <p
+        className={`font-semibold text-[40px] leading-none tracking-tightest tabular-nums ${
+          accent ? "text-teal" : "text-ink"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }

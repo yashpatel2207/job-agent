@@ -47,7 +47,7 @@ def list_jobs(status: str = "new", min_score: float = 0.0):
         q = session.query(Job).filter(Job.score >= min_score)
         if status != "all":
             q = q.filter(Job.status == status)
-        q = q.order_by(Job.score.desc().nullslast(), Job.scraped_at.desc())
+        q = q.order_by(Job.scraped_at.desc(), Job.score.desc().nullslast())
         return [job_to_dict(j) for j in q.all()]
     finally:
         session.close()
@@ -104,6 +104,70 @@ def save_answers(job_id: str, payload: SaveAnswers):
         job.drafted_answers = payload.answers
         session.commit()
         return {"ok": True}
+    finally:
+        session.close()
+
+
+class CompanyNoteField(BaseModel):
+    question: str
+    answer: str
+
+
+class SaveCompanyNotes(BaseModel):
+    fields: list[CompanyNoteField]
+
+
+def _company_key(company: str) -> str:
+    return company.strip().lower()
+
+
+@app.get("/api/company-notes/{company}")
+def get_company_notes(company: str):
+    key = _company_key(company)
+    if not key:
+        raise HTTPException(400, "Company name is required")
+    session = get_session()
+    try:
+        p = session.query(Profile).first()
+        notes = ((p.data if p else None) or {}).get("company_notes", {}).get(key)
+        if not notes:
+            return {"company": key, "fields": [], "updated_at": None}
+        return {
+            "company": key,
+            "fields": notes.get("fields", []),
+            "updated_at": notes.get("updated_at"),
+        }
+    finally:
+        session.close()
+
+
+@app.put("/api/company-notes/{company}")
+def put_company_notes(company: str, payload: SaveCompanyNotes):
+    key = _company_key(company)
+    if not key:
+        raise HTTPException(400, "Company name is required")
+    session = get_session()
+    try:
+        p = session.query(Profile).first()
+        if p is None:
+            p = Profile(id=1, data={})
+            session.add(p)
+            session.flush()
+        # Reassign p.data wholesale — SQLAlchemy's plain JSON column
+        # doesn't track in-place mutations of nested dicts.
+        data = dict(p.data or {})
+        notes_root = dict(data.get("company_notes") or {})
+        existing = notes_root.get(key) or {}
+        record = {
+            "display_name": existing.get("display_name") or company.strip(),
+            "fields": [{"question": f.question, "answer": f.answer} for f in payload.fields],
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+        notes_root[key] = record
+        data["company_notes"] = notes_root
+        p.data = data
+        session.commit()
+        return {"company": key, "fields": record["fields"], "updated_at": record["updated_at"]}
     finally:
         session.close()
 

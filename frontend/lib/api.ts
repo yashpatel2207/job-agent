@@ -105,3 +105,39 @@ export async function setCronPaused(paused: boolean): Promise<void> {
   });
   if (!res.ok) throw new Error("Failed to update pause state");
 }
+
+export interface CompanyNoteField {
+  question: string;
+  answer: string;
+}
+
+export interface CompanyNotes {
+  company: string;
+  fields: CompanyNoteField[];
+  updated_at: string | null;
+}
+
+export async function fetchCompanyNotes(company: string): Promise<CompanyNotes> {
+  const res = await fetch(
+    `${API_URL}/api/company-notes/${encodeURIComponent(company)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) throw new Error("Failed to fetch company notes");
+  return res.json();
+}
+
+export async function saveCompanyNotes(
+  company: string,
+  fields: CompanyNoteField[],
+): Promise<CompanyNotes> {
+  const res = await fetch(
+    `${API_URL}/api/company-notes/${encodeURIComponent(company)}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields }),
+    },
+  );
+  if (!res.ok) throw new Error("Failed to save company notes");
+  return res.json();
+}

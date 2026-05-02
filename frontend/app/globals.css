@@ -3,37 +3,407 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 220 13% 13%;
+  /* Apple-inspired light surfaces */
+  --snow: 240 23% 98%;        /* #fbfbfd — page bg */
+  --snow-2: 240 14% 96%;      /* #f2f2f5 — subtle alt surface */
+  --paper: 0 0% 100%;         /* #ffffff — card surface */
+  --ink: 240 6% 10%;          /* #1d1d1f — near-black text */
+  --slate: 240 2% 44%;        /* #6e6e73 — secondary text */
+  --mute: 240 2% 56%;         /* #8e8e93 — tertiary */
+  --hairline: 240 9% 84%;     /* #d2d2d7 — dividers */
+  --blue: 211 100% 45%;       /* #0071e3 — Apple Blue, interactive */
+  --blue-2: 211 100% 38%;     /* hover */
+  --amber: 33 95% 48%;        /* warning + mid match */
+  --green: 153 100% 33%;      /* success */
+  --red: 5 70% 50%;           /* failure */
+
+  /* Tier + page personality colors */
+  --teal: 168 76% 36%;        /* #15a085 — strong match + Queue page */
+  --coral: 8 80% 60%;         /* #ed6e5a — Applied page */
+  --indigo: 248 70% 60%;      /* #6e5cf2 — Profile page */
+
+  /* Pastel surface tints — used sparingly */
+  --mint-bg: 162 50% 96%;     /* strong-match accent surfaces */
+  --butter-bg: 45 95% 95%;    /* mid-match accent surfaces */
+  --peach-bg: 18 95% 95%;     /* hero gradient blob */
+  --sky-bg: 205 90% 96%;      /* hero gradient blob */
+  --lavender-bg: 258 50% 96%; /* hero gradient blob */
+
+  /* Legacy aliases — keep so existing utilities still resolve */
+  --background: 240 23% 98%;
+  --foreground: 240 6% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 220 13% 13%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
-  --border: 220 13% 91%;
+  --card-foreground: 240 6% 10%;
+  --muted: 240 14% 96%;
+  --muted-foreground: 240 2% 44%;
+  --border: 240 9% 84%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 220 13% 9%;
-    --foreground: 220 14% 96%;
-    --card: 220 13% 12%;
-    --card-foreground: 220 14% 96%;
-    --muted: 220 13% 15%;
-    --muted-foreground: 220 9% 64%;
-    --border: 220 13% 20%;
+@layer base {
+  * {
+    border-color: hsl(var(--hairline));
+  }
+  html {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: hsl(var(--snow));
+    background-image:
+      radial-gradient(900px 600px at -10% -10%, hsl(18 95% 88% / 0.55), transparent 60%),
+      radial-gradient(900px 600px at 110% -10%, hsl(205 90% 86% / 0.55), transparent 60%),
+      radial-gradient(900px 700px at 50% 110%, hsl(258 70% 88% / 0.35), transparent 60%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: hsl(var(--ink));
+    min-height: 100vh;
+  }
+  ::selection {
+    background: hsl(var(--blue) / 0.18);
+    color: hsl(var(--ink));
+  }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--hairline));
+    border-radius: 999px;
+    border: 3px solid hsl(var(--snow));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--mute));
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
-* {
-  border-color: hsl(var(--border));
-}
+@layer components {
+  /* Eyebrow / small grey label — sentence case */
+  .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(var(--slate));
+    letter-spacing: 0;
+  }
+  .label-lg {
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--slate));
+    letter-spacing: 0;
+  }
 
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-feature-settings: "rlig" 1, "calt" 1;
-}
+  /* Hairline rule */
+  .hairline {
+    height: 1px;
+    background: hsl(var(--hairline));
+  }
 
-html {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+  .reveal {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: reveal 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulseSoft {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* Pill buttons — Apple's iconic shape */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--blue));
+    color: white;
+    border: 1px solid hsl(var(--blue));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    padding: 10px 22px;
+    border-radius: 980px;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: hsl(var(--blue-2));
+    border-color: hsl(var(--blue-2));
+  }
+  .btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.22);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--paper));
+    color: hsl(var(--ink));
+    border: 1px solid hsl(var(--hairline));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    padding: 10px 22px;
+    border-radius: 980px;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: hsl(var(--ink));
+    color: hsl(var(--ink));
+  }
+  .btn-ghost:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.22);
+  }
+  .btn-ghost:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Card surface — soft layered shadow, no border */
+  .card {
+    background: hsl(var(--paper));
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 24px -8px rgb(0 0 0 / 0.06);
+    transition: box-shadow 0.35s ease, transform 0.35s ease;
+  }
+  .card-hover:hover {
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05), 0 18px 36px -10px rgb(0 0 0 / 0.10);
+    transform: translateY(-2px);
+  }
+
+  /* Nav link — sentence case, slate by default, blue on hover */
+  .nav-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--slate));
+    letter-spacing: -0.005em;
+    transition: color 0.2s ease;
+    position: relative;
+  }
+  .nav-link:hover,
+  .nav-link[data-active="true"] {
+    color: hsl(var(--ink));
+  }
+
+  /* Pill select */
+  .select {
+    appearance: none;
+    background: hsl(var(--paper));
+    border: 1px solid hsl(var(--hairline));
+    border-radius: 980px;
+    padding: 9px 38px 9px 16px;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: hsl(var(--ink));
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1.2;
+  }
+  .select:hover {
+    border-color: hsl(var(--mute));
+  }
+  .select:focus {
+    outline: none;
+    border-color: hsl(var(--blue));
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.18);
+  }
+  .select option {
+    background: hsl(var(--paper));
+    color: hsl(var(--ink));
+  }
+
+  /* Search field — pill, soft snow background, blue ring on focus */
+  .search {
+    background: hsl(var(--snow-2));
+    border: 1px solid transparent;
+    border-radius: 980px;
+    padding: 10px 18px;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: hsl(var(--ink));
+    width: 100%;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .search:hover {
+    background: hsl(var(--snow));
+  }
+  .search:focus {
+    outline: none;
+    background: hsl(var(--paper));
+    border-color: hsl(var(--blue));
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.18);
+  }
+  .search::placeholder {
+    color: hsl(var(--mute));
+  }
+  .search::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  /* Textarea / form field */
+  .field {
+    width: 100%;
+    background: hsl(var(--paper));
+    border: 1px solid hsl(var(--hairline));
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: hsl(var(--ink));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field:focus {
+    outline: none;
+    border-color: hsl(var(--blue));
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.18);
+  }
+  .field::placeholder {
+    color: hsl(var(--mute));
+  }
+
+  /* Sticky translucent nav with backdrop blur — Apple's hallmark */
+  .nav-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: hsl(var(--snow) / 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid hsl(var(--hairline) / 0.6);
+  }
+
+  /* Sub-nav: tier jumper, sits below the main nav with the same blur */
+  .tier-bar {
+    position: sticky;
+    top: 56px; /* main nav is h-14 = 56px */
+    z-index: 40;
+    background: hsl(var(--snow) / 0.78);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    border-bottom: 1px solid hsl(var(--hairline) / 0.55);
+  }
+
+  /* Pill chip for tier navigation */
+  .tier-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 12px;
+    border-radius: 980px;
+    background: hsl(var(--paper));
+    border: 1px solid hsl(var(--hairline));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--slate));
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    white-space: nowrap;
+  }
+  .tier-chip:hover {
+    color: hsl(var(--ink));
+    border-color: hsl(var(--mute));
+  }
+  .tier-chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px hsl(var(--blue) / 0.22);
+  }
+  .tier-chip:active {
+    transform: translateY(1px);
+  }
+  .tier-chip-active {
+    color: hsl(var(--ink));
+    border-color: hsl(var(--ink));
+  }
+  .tier-chip-count {
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--mute));
+    font-weight: 500;
+  }
+  .tier-chip-active .tier-chip-count {
+    color: hsl(var(--slate));
+  }
+  .tier-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .tier-dot-teal { background: hsl(var(--teal)); }
+  .tier-dot-amber { background: hsl(var(--amber)); }
+  .tier-dot-slate { background: hsl(var(--mute)); }
+
+  /* Pagination buttons */
+  .page-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 980px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: hsl(var(--slate));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .page-btn:hover:not(:disabled) {
+    color: hsl(var(--ink));
+    background: hsl(var(--snow-2));
+  }
+  .page-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px hsl(var(--blue) / 0.22);
+  }
+  .page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .page-btn-active,
+  .page-btn-active:hover:not(:disabled) {
+    color: hsl(var(--ink));
+    background: hsl(var(--paper));
+    border-color: hsl(var(--ink));
+  }
 }
