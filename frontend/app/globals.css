@@ -358,11 +358,14 @@
     color: hsl(var(--slate));
   }
   .tier-dot {
-    width: 7px;
-    height: 7px;
+    width: 10px;
+    height: 10px;
+    min-width: 10px;
+    min-height: 10px;
     border-radius: 999px;
     display: inline-block;
     flex-shrink: 0;
+    box-shadow: 0 0 0 2px hsl(var(--paper)), 0 0 0 3px hsl(var(--hairline));
   }
   .tier-dot-teal { background: hsl(var(--teal)); }
   .tier-dot-amber { background: hsl(var(--amber)); }

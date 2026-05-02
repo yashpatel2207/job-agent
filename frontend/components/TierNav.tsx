@@ -9,6 +9,12 @@ export type TierNavItem = {
   accent: "teal" | "amber" | "slate";
 };
 
+const DOT_CLASS: Record<TierNavItem["accent"], string> = {
+  teal: "tier-dot tier-dot-teal",
+  amber: "tier-dot tier-dot-amber",
+  slate: "tier-dot tier-dot-slate",
+};
+
 export function TierNav({ tiers }: { tiers: TierNavItem[] }) {
   const [active, setActive] = useState<string | null>(tiers[0]?.id ?? null);
 
@@ -73,7 +79,7 @@ export function TierNav({ tiers }: { tiers: TierNavItem[] }) {
               className={`tier-chip ${active === t.id ? "tier-chip-active" : ""}`}
               aria-current={active === t.id ? "true" : undefined}
             >
-              <span className={`tier-dot tier-dot-${t.accent}`} aria-hidden />
+              <span className={DOT_CLASS[t.accent]} aria-hidden />
               <span>{t.label}</span>
               <span className="tier-chip-count">{t.count}</span>
             </button>
