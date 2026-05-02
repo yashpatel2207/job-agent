@@ -41,7 +41,7 @@ def _fetch_detail(session: requests.Session, base: str, site: str, tenant: str,
         title=info.get("title", ""),
         location=info.get("location", ""),
         jd_text=jd_text,
-        apply_url=f"{base}{external_path}",
+        apply_url=f"{base}/{site}{external_path}",
         ats="workday",
         posted_at=posted_at,
     )
