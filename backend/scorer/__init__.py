@@ -8,6 +8,7 @@ from scraper import load_config, TITLE_EXCLUDE_RE, TITLE_INCLUDE_RE
 from llm import call_llm
 
 SCORING_WORKERS = 4
+BATCH_SIZE = 5
 
 NO_SPONSORSHIP_RE = re.compile(
     r"(no\s+(?:visa\s+)?sponsorship|"
@@ -94,6 +95,48 @@ Scoring guidance:
 """
 
 
+BATCH_SCORING_PROMPT = """You are evaluating multiple job postings for a candidate with these criteria:
+
+Target roles: {target_roles}
+Required skills: {required_skills}
+Preferred skills: {preferred_skills}
+Minimum comp: ${comp_min:,}
+Acceptable locations: {locations}
+Hard exclusions (do NOT apply): {exclude}
+Candidate needs H1B sponsorship: {sponsorship_required}
+
+Below is a JSON array of job postings. Score EACH ONE independently.
+
+Jobs to score:
+{jobs_json}
+
+Return a JSON object with a single key "results" whose value is an array of objects in the SAME ORDER as the input, one per job. Each result object must have this exact shape:
+{{
+  "id": <integer matching the input job's id>,
+  "score": <float 0-10>,
+  "reasons": [<2-4 short strings, why it matches>],
+  "red_flags": [<0-3 short strings, concerns>],
+  "seniority_fit": "below" | "match" | "above",
+  "comp_visible": <true if comp is stated in JD, false otherwise>,
+  "comp_range": "<string or null>",
+  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear"
+}}
+
+Return STRICTLY valid JSON, no markdown, no preamble. The "results" array length must match the input length.
+
+Scoring guidance:
+- 9-10: Dream fit. Senior/staff level, required skills explicit, comp clearly in range, no red flags.
+- 7-8: Strong fit with minor gaps.
+- 5-6: Borderline, meaningful gaps.
+- 0-4: Not worth applying. Wrong level, missing required skills, in exclusion list, or comp clearly below minimum.
+- If the role is in the exclusion list (crypto, web3, etc.), score 0.
+- FULL-STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch. Frontend-only roles are unaffected.
+- LOCATION: The acceptable locations list is broad. Treat any US-based role (remote or in any of the listed metros) as a location match. Only penalize for location if the role is non-US, requires being in a city not on the list (e.g. Detroit, Salt Lake City), or requires in-office presence somewhere the candidate cannot relocate to.
+- SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
+- Federal contractor / defense / clearance-required roles almost always require US persons — treat as "explicit_no" for sponsorship purposes.
+"""
+
+
 def prescreen(job: Job, criteria: dict) -> dict | None:
     """Cheap regex prefilter. Returns a score dict to hard-drop, or None to pass to the LLM."""
     jd = (job.jd_text or "")[:10000]
@@ -135,7 +178,17 @@ def prescreen(job: Job, criteria: dict) -> dict | None:
     return None
 
 
+def _strip_code_fence(text: str) -> str:
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+        text = text.strip()
+    return text
+
+
 def score_job(job: Job, criteria: dict) -> dict:
+    """Score a single job. Used as fallback when batch scoring fails."""
     prompt = SCORING_PROMPT.format(
         target_roles=", ".join(criteria["target_roles"]),
         required_skills=", ".join(criteria["required_skills"]),
@@ -163,13 +216,82 @@ def score_job(job: Job, criteria: dict) -> dict:
     else:
         raise last_err
 
-    if text.startswith("```"):
-        text = text.split("```")[1]
-        if text.startswith("json"):
-            text = text[4:]
-        text = text.strip()
+    return json.loads(_strip_code_fence(text))
 
-    return json.loads(text)
+
+def score_jobs_batch(jobs: list[Job], criteria: dict) -> list[dict]:
+    """Score a batch of jobs in a single LLM call. Raises if parse/length validation fails."""
+    payload = [
+        {
+            "id": j.id,
+            "company": j.company,
+            "title": j.title,
+            "location": j.location or "unspecified",
+            "jd_text": (j.jd_text or "")[:6000],
+        }
+        for j in jobs
+    ]
+    prompt = BATCH_SCORING_PROMPT.format(
+        target_roles=", ".join(criteria["target_roles"]),
+        required_skills=", ".join(criteria["required_skills"]),
+        preferred_skills=", ".join(criteria["preferred_skills"]),
+        comp_min=criteria["comp_min"],
+        locations=", ".join(criteria["location"]),
+        exclude=", ".join(criteria["exclude"]),
+        sponsorship_required="yes" if criteria.get("sponsorship_required") else "no",
+        jobs_json=json.dumps(payload, ensure_ascii=False),
+    )
+
+    last_err = None
+    for attempt in range(3):
+        try:
+            text = call_llm(prompt, want_json=True)
+            break
+        except RuntimeError as e:
+            last_err = e
+            wait = 2 ** attempt
+            print(f"    LLM dispatcher error, retrying in {wait}s...")
+            time.sleep(wait)
+    else:
+        raise last_err
+
+    parsed = json.loads(_strip_code_fence(text))
+    results = parsed.get("results") if isinstance(parsed, dict) else parsed
+    if not isinstance(results, list):
+        raise ValueError(f"batch response missing results array: {type(results).__name__}")
+    if len(results) != len(jobs):
+        raise ValueError(f"batch length mismatch: got {len(results)}, expected {len(jobs)}")
+
+    by_id = {r.get("id"): r for r in results if isinstance(r, dict)}
+    ordered: list[dict] = []
+    for j in jobs:
+        r = by_id.get(j.id)
+        if r is None:
+            raise ValueError(f"batch response missing id={j.id}")
+        ordered.append(r)
+    return ordered
+
+
+def _apply_result(job: Job, result: dict):
+    job.score = result["score"]
+    job.score_reasons = result.get("reasons", [])
+    job.red_flags = result.get("red_flags", [])
+
+
+def _score_chunk(chunk: list[Job], criteria: dict) -> list[tuple[Job, dict | Exception]]:
+    """Try batched scoring; on failure, fall back to per-job scoring. Returns (job, result-or-exc) per job."""
+    try:
+        results = score_jobs_batch(chunk, criteria)
+        return list(zip(chunk, results))
+    except Exception as batch_err:
+        print(f"    batch failed ({batch_err}), falling back to per-job for {len(chunk)} jobs")
+        out: list[tuple[Job, dict | Exception]] = []
+        for job in chunk:
+            try:
+                out.append((job, score_job(job, criteria)))
+            except Exception as e:
+                out.append((job, e))
+        return out
 
 
 def score_all_unscored():
@@ -194,29 +316,34 @@ def score_all_unscored():
             to_score.append(job)
         session.commit()
 
+        chunks = [to_score[i:i + BATCH_SIZE] for i in range(0, len(to_score), BATCH_SIZE)]
         scored_count = 0
+        failed_count = 0
         total = len(to_score)
         with ThreadPoolExecutor(max_workers=SCORING_WORKERS) as pool:
-            fut_to_job = {
-                pool.submit(score_job, j, criteria): j for j in to_score
-            }
-            for fut in as_completed(fut_to_job):
-                job = fut_to_job[fut]
-                try:
-                    result = fut.result()
-                    job.score = result["score"]
-                    job.score_reasons = result.get("reasons", [])
-                    job.red_flags = result.get("red_flags", [])
-                    session.commit()
-                    scored_count += 1
-                    print(
-                        f"  [{scored_count}/{total}] {job.company} / {job.title}: "
-                        f"{job.score}"
-                    )
-                except Exception as e:
-                    print(f"  FAILED {job.company} / {job.title}: {e}")
-                    session.rollback()
+            fut_to_chunk = {pool.submit(_score_chunk, c, criteria): c for c in chunks}
+            for fut in as_completed(fut_to_chunk):
+                pairs = fut.result()
+                for job, result in pairs:
+                    if isinstance(result, Exception):
+                        print(f"  FAILED {job.company} / {job.title}: {result}")
+                        failed_count += 1
+                        continue
+                    try:
+                        _apply_result(job, result)
+                        session.commit()
+                        scored_count += 1
+                        print(
+                            f"  [{scored_count}/{total}] {job.company} / {job.title}: "
+                            f"{job.score}"
+                        )
+                    except Exception as e:
+                        print(f"  FAILED {job.company} / {job.title}: {e}")
+                        failed_count += 1
+                        session.rollback()
 
-        print(f"Prescreen-dropped {prescreen_count}; scored {scored_count}.")
+        print(
+            f"Prescreen-dropped {prescreen_count}; scored {scored_count}; failed {failed_count}."
+        )
     finally:
         session.close()

@@ -1,7 +1,8 @@
-"""Round-robin LLM dispatcher across free-tier providers.
+"""Round-robin LLM dispatcher across permanently-free-tier providers.
 
-Scoring rotates across 4 providers (Gemini 2.5 Flash-Lite, Hyperbolic 70B,
-SambaNova 70B, Cerebras 70B). Tailor summaries always use Groq Llama 3.1 8B
+Scoring rotates across 6 providers (Gemini 2.5 Flash-Lite, Groq Llama 3.3 70B
+Versatile, Cerebras gpt-oss-120b, Mistral Large, NVIDIA NIM Llama 3.3 70B,
+OpenRouter Qwen3-Next 80B free). Tailor summaries always use Groq Llama 3.1 8B
 via call_llm_fast.
 
 Tracks per-provider daily call counts (reset at UTC midnight) and 60s
@@ -21,25 +22,31 @@ from groq import Groq
 from openai import OpenAI
 
 GEMINI_MODEL = "gemini-2.5-flash-lite"
-HYPERBOLIC_MODEL = "meta-llama/Llama-3.3-70B-Instruct"
-SAMBANOVA_MODEL = "Meta-Llama-3.3-70B-Instruct"
-CEREBRAS_MODEL = "llama-3.3-70b"
+GROQ_SCORING_MODEL = "llama-3.3-70b-versatile"
 GROQ_FAST_MODEL = "llama-3.1-8b-instant"
+CEREBRAS_MODEL = "gpt-oss-120b"
+MISTRAL_MODEL = "mistral-large-latest"
+NVIDIA_MODEL = "meta/llama-3.3-70b-instruct"
+OPENROUTER_MODEL = "qwen/qwen3-next-80b-a3b-instruct:free"
 
 DEBUG = os.environ.get("LLM_DEBUG") == "1"
 
 PROVIDER_DAILY_CAP = {
     "gemini": 14000,
-    "hyperbolic": 5000,
-    "sambanova": 14000,
+    "groq": 1000,
     "cerebras": 14000,
+    "mistral": 100000,
+    "nvidia": 14000,
+    "openrouter": 50,
     "groq_fast": 14000,
 }
 PROVIDER_ENV_KEYS = {
     "gemini": "GEMINI_API_KEY",
-    "hyperbolic": "HYPERBOLIC_API_KEY",
-    "sambanova": "SAMBANOVA_API_KEY",
+    "groq": "GROQ_API_KEY",
     "cerebras": "CEREBRAS_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "nvidia": "NVIDIA_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
     "groq_fast": "GROQ_API_KEY",
 }
 COOLDOWN_SECONDS = 60
@@ -78,24 +85,34 @@ def _cerebras():
     return _clients["cerebras"]
 
 
-def _hyperbolic():
+def _mistral():
     with _client_lock:
-        if "hyperbolic" not in _clients:
-            _clients["hyperbolic"] = OpenAI(
-                api_key=os.environ["HYPERBOLIC_API_KEY"],
-                base_url="https://api.hyperbolic.xyz/v1",
+        if "mistral" not in _clients:
+            _clients["mistral"] = OpenAI(
+                api_key=os.environ["MISTRAL_API_KEY"],
+                base_url="https://api.mistral.ai/v1",
             )
-    return _clients["hyperbolic"]
+    return _clients["mistral"]
 
 
-def _sambanova():
+def _nvidia():
     with _client_lock:
-        if "sambanova" not in _clients:
-            _clients["sambanova"] = OpenAI(
-                api_key=os.environ["SAMBANOVA_API_KEY"],
-                base_url="https://api.sambanova.ai/v1",
+        if "nvidia" not in _clients:
+            _clients["nvidia"] = OpenAI(
+                api_key=os.environ["NVIDIA_API_KEY"],
+                base_url="https://integrate.api.nvidia.com/v1",
             )
-    return _clients["sambanova"]
+    return _clients["nvidia"]
+
+
+def _openrouter():
+    with _client_lock:
+        if "openrouter" not in _clients:
+            _clients["openrouter"] = OpenAI(
+                api_key=os.environ["OPENROUTER_API_KEY"],
+                base_url="https://openrouter.ai/api/v1",
+            )
+    return _clients["openrouter"]
 
 
 def _call_gemini(prompt: str, want_json: bool) -> str:
@@ -120,16 +137,24 @@ def _call_openai_compat(client, model: str, prompt: str, want_json: bool) -> str
     return r.choices[0].message.content
 
 
-def _call_hyperbolic(prompt: str, want_json: bool) -> str:
-    return _call_openai_compat(_hyperbolic(), HYPERBOLIC_MODEL, prompt, want_json)
-
-
-def _call_sambanova(prompt: str, want_json: bool) -> str:
-    return _call_openai_compat(_sambanova(), SAMBANOVA_MODEL, prompt, want_json)
+def _call_groq_scoring(prompt: str, want_json: bool) -> str:
+    return _call_openai_compat(_groq(), GROQ_SCORING_MODEL, prompt, want_json)
 
 
 def _call_cerebras(prompt: str, want_json: bool) -> str:
     return _call_openai_compat(_cerebras(), CEREBRAS_MODEL, prompt, want_json)
+
+
+def _call_mistral(prompt: str, want_json: bool) -> str:
+    return _call_openai_compat(_mistral(), MISTRAL_MODEL, prompt, want_json)
+
+
+def _call_nvidia(prompt: str, want_json: bool) -> str:
+    return _call_openai_compat(_nvidia(), NVIDIA_MODEL, prompt, want_json)
+
+
+def _call_openrouter(prompt: str, want_json: bool) -> str:
+    return _call_openai_compat(_openrouter(), OPENROUTER_MODEL, prompt, want_json)
 
 
 def _call_groq_fast(prompt: str, want_json: bool) -> str:
@@ -138,9 +163,11 @@ def _call_groq_fast(prompt: str, want_json: bool) -> str:
 
 SCORING_PROVIDERS = [
     ("gemini", _call_gemini),
-    ("hyperbolic", _call_hyperbolic),
-    ("sambanova", _call_sambanova),
+    ("groq", _call_groq_scoring),
     ("cerebras", _call_cerebras),
+    ("mistral", _call_mistral),
+    ("nvidia", _call_nvidia),
+    ("openrouter", _call_openrouter),
 ]
 _rotator = itertools.cycle(range(len(SCORING_PROVIDERS)))
 _rot_lock = threading.Lock()
