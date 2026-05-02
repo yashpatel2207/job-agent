@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { fetchJob, saveAnswers, triggerPrefill, updateStatus, Job } from "@/lib/api";
+import { fetchJob, saveAnswers, updateStatus, Job } from "@/lib/api";
 import { MatchBadge } from "@/components/MatchBadge";
 
 export default function JobDetailPage() {
@@ -12,7 +12,6 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     fetchJob(id).then((j) => {
@@ -29,22 +28,10 @@ export default function JobDetailPage() {
     setSaving(false);
   };
 
-  const handlePrefill = async () => {
-    setBusy(true);
-    try {
-      await saveAnswers(job.id, answers);
-      await triggerPrefill(job.id);
-      alert("Chromium is opening on your laptop. Review, edit, submit.");
-    } catch {
-      alert("Prefill failed. Is the local API running?");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleMarkApplied = async () => {
-    await updateStatus(job.id, "applied");
-    router.push("/");
+  const handleToggleApplied = async () => {
+    const next = job.status === "applied" ? "new" : "applied";
+    await updateStatus(job.id, next);
+    router.push(next === "applied" ? "/" : "/applied");
   };
 
   return (
@@ -92,46 +79,10 @@ export default function JobDetailPage() {
             </section>
           )}
 
-          {job.tailored_bullets && (
-            <section className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-5">
-              <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-sm font-medium">Tailored resume preview</h2>
-                <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                  {job.has_resume ? "DOCX generated" : "not generated"}
-                </span>
-              </div>
-              <p className="text-sm italic text-[hsl(var(--muted-foreground))] mb-4">
-                {job.tailored_bullets.changes_summary}
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Summary</p>
-                  <p className="text-sm">{job.tailored_bullets.summary}</p>
-                </div>
-                {job.tailored_bullets.experience.map((exp, i) => (
-                  <div key={i}>
-                    <p className="text-sm font-medium">
-                      {exp.role} · {exp.company}
-                      <span className="font-normal text-[hsl(var(--muted-foreground))]"> · {exp.dates}</span>
-                    </p>
-                    <ul className="mt-1 space-y-1">
-                      {exp.bullets.map((b, j) => (
-                        <li key={j} className="text-sm pl-4 relative">
-                          <span className="absolute left-0">·</span>
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
           <section className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-xl p-5">
             <h2 className="text-sm font-medium mb-3">Custom answers</h2>
             <p className="text-xs text-[hsl(var(--muted-foreground))] mb-4">
-              Draft your answers here. They'll be prefilled when you open the form. This is the part you should write in your own voice.
+              Draft your answers here so they're handy when you fill out the application.
             </p>
 
             {[
@@ -168,13 +119,6 @@ export default function JobDetailPage() {
         </div>
 
         <aside className="space-y-3">
-          <button
-            onClick={handlePrefill}
-            disabled={busy || !job.has_resume}
-            className="w-full text-sm font-medium bg-[hsl(var(--foreground))] text-[hsl(var(--background))] px-3 py-2 rounded-md hover:opacity-90 disabled:opacity-40"
-          >
-            {busy ? "Opening browser..." : "Approve and prefill"}
-          </button>
           <a
             href={job.apply_url}
             target="_blank"
@@ -184,10 +128,10 @@ export default function JobDetailPage() {
             Open original posting
           </a>
           <button
-            onClick={handleMarkApplied}
-            className="w-full text-sm px-3 py-2 rounded-md border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+            onClick={handleToggleApplied}
+            className="w-full text-sm font-medium px-3 py-2 rounded-md bg-[hsl(var(--foreground))] text-[hsl(var(--background))] hover:opacity-90"
           >
-            Mark as applied
+            {job.status === "applied" ? "Move back to queue" : "Mark as applied"}
           </button>
         </aside>
       </div>

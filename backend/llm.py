@@ -2,8 +2,7 @@
 
 Scoring rotates across 6 providers (Gemini 2.5 Flash-Lite, Groq Llama 3.3 70B
 Versatile, Cerebras gpt-oss-120b, Mistral Large, NVIDIA NIM Llama 3.3 70B,
-OpenRouter Qwen3-Next 80B free). Tailor summaries always use Groq Llama 3.1 8B
-via call_llm_fast.
+OpenRouter Qwen3-Next 80B free).
 
 Tracks per-provider daily call counts (reset at UTC midnight) and 60s
 cooling-off windows so we don't re-hit a provider that just told us it's
@@ -23,7 +22,6 @@ from openai import OpenAI
 
 GEMINI_MODEL = "gemini-2.5-flash-lite"
 GROQ_SCORING_MODEL = "llama-3.3-70b-versatile"
-GROQ_FAST_MODEL = "llama-3.1-8b-instant"
 CEREBRAS_MODEL = "gpt-oss-120b"
 MISTRAL_MODEL = "mistral-large-latest"
 NVIDIA_MODEL = "meta/llama-3.3-70b-instruct"
@@ -38,7 +36,6 @@ PROVIDER_DAILY_CAP = {
     "mistral": 100000,
     "nvidia": 14000,
     "openrouter": 50,
-    "groq_fast": 14000,
 }
 PROVIDER_ENV_KEYS = {
     "gemini": "GEMINI_API_KEY",
@@ -47,7 +44,6 @@ PROVIDER_ENV_KEYS = {
     "mistral": "MISTRAL_API_KEY",
     "nvidia": "NVIDIA_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
-    "groq_fast": "GROQ_API_KEY",
 }
 COOLDOWN_SECONDS = 60
 SWEEP_BACKOFF_SECONDS = 30
@@ -157,10 +153,6 @@ def _call_openrouter(prompt: str, want_json: bool) -> str:
     return _call_openai_compat(_openrouter(), OPENROUTER_MODEL, prompt, want_json)
 
 
-def _call_groq_fast(prompt: str, want_json: bool) -> str:
-    return _call_openai_compat(_groq(), GROQ_FAST_MODEL, prompt, want_json)
-
-
 SCORING_PROVIDERS = [
     ("gemini", _call_gemini),
     ("groq", _call_groq_scoring),
@@ -246,30 +238,3 @@ def call_llm(prompt: str, want_json: bool = True) -> str:
                 print(f"    [llm] sweep miss, sleeping {SWEEP_BACKOFF_SECONDS}s")
             time.sleep(SWEEP_BACKOFF_SECONDS)
     raise RuntimeError(f"all providers failed: {last_err}")
-
-
-def call_llm_fast(prompt: str, want_json: bool = False) -> str:
-    """Tailor's fast lane: always Groq Llama 3.1 8B (high daily quota, lower judgment quality)."""
-    last_err: Exception | None = None
-    for attempt in range(3):
-        with _quota_lock:
-            eligible = _is_eligible("groq_fast", time.time())
-        if not eligible:
-            time.sleep(SWEEP_BACKOFF_SECONDS)
-            continue
-        try:
-            result = _call_groq_fast(prompt, want_json)
-            _mark_used("groq_fast")
-            if DEBUG:
-                print("    [llm-fast] groq_fast served")
-            return result
-        except Exception as e:
-            last_err = e
-            if DEBUG:
-                print(f"    [llm-fast] groq_fast failed: {str(e)[:120]}")
-            if _is_rate_error(e):
-                _mark_throttled("groq_fast")
-                time.sleep(SWEEP_BACKOFF_SECONDS)
-            else:
-                time.sleep(2 ** attempt)
-    raise RuntimeError(f"groq_fast failed: {last_err}")

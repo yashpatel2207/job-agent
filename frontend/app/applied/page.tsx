@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchJobs, Job } from "@/lib/api";
+import { fetchJobs, updateStatus, Job } from "@/lib/api";
 import { MatchBadge } from "@/components/MatchBadge";
 import Link from "next/link";
 
@@ -14,6 +14,12 @@ export default function AppliedPage() {
       .then(setJobs)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleUndo = async (id: string) => {
+    if (!confirm("Move back to queue?")) return;
+    await updateStatus(id, "new");
+    setJobs((prev) => prev.filter((j) => j.id !== id));
+  };
 
   return (
     <div>
@@ -30,21 +36,24 @@ export default function AppliedPage() {
 
       <div className="space-y-2">
         {jobs.map((j) => (
-          <Link
+          <div
             key={j.id}
-            href={`/job/${j.id}`}
-            className="block bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg px-4 py-3 hover:bg-[hsl(var(--muted))]"
+            className="flex items-center gap-3 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg px-4 py-3"
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <p className="font-medium text-sm truncate">{j.title}</p>
-                <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                  {j.company} · {j.location || "—"}
-                </p>
-              </div>
-              <MatchBadge score={j.score} />
-            </div>
-          </Link>
+            <Link href={`/job/${j.id}`} className="flex-1 min-w-0 hover:opacity-80">
+              <p className="font-medium text-sm truncate">{j.title}</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                {j.company} · {j.location || "—"}
+              </p>
+            </Link>
+            <MatchBadge score={j.score} />
+            <button
+              onClick={() => handleUndo(j.id)}
+              className="text-xs px-2.5 py-1 rounded-md border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"
+            >
+              Undo
+            </button>
+          </div>
         ))}
       </div>
     </div>

@@ -11,12 +11,10 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from threading import Thread
 
 import requests
 
 from db.models import Job, Profile, MasterResume, Settings, get_session, init_db
-from prefill import prefill
 
 GITHUB_REPO = os.getenv("GITHUB_REPO", "yashpatel2207/job-agent")
 GITHUB_WORKFLOW_FILE = os.getenv("GITHUB_WORKFLOW_FILE", "daily-scrape.yml")
@@ -84,6 +82,8 @@ def update_status(job_id: str, payload: UpdateJobStatus):
             job.user_notes = payload.notes
         if payload.status == "applied":
             job.applied_at = datetime.utcnow()
+        elif payload.status == "new":
+            job.applied_at = None
         session.commit()
         return {"ok": True}
     finally:
@@ -104,28 +104,6 @@ def save_answers(job_id: str, payload: SaveAnswers):
         job.drafted_answers = payload.answers
         session.commit()
         return {"ok": True}
-    finally:
-        session.close()
-
-
-@app.post("/api/jobs/{job_id}/prefill")
-def trigger_prefill(job_id: str):
-    session = get_session()
-    try:
-        job = session.query(Job).filter(Job.id == job_id).first()
-        if not job:
-            raise HTTPException(404)
-
-        def _run():
-            prefill(
-                apply_url=job.apply_url,
-                ats=job.ats,
-                resume_path=job.resume_docx_path or "",
-                drafted_answers=job.drafted_answers,
-            )
-
-        Thread(target=_run, daemon=True).start()
-        return {"ok": True, "message": "Browser opening..."}
     finally:
         session.close()
 
@@ -235,7 +213,7 @@ def stats():
         total = session.query(Job).count()
         new = session.query(Job).filter(Job.status == "new").count()
         applied = session.query(Job).filter(Job.status == "applied").count()
-        ready = session.query(Job).filter(Job.status == "new", Job.score >= 7.0, Job.resume_docx_path.isnot(None)).count()
+        ready = session.query(Job).filter(Job.status == "new", Job.score >= 7.0).count()
         avg_score_rows = session.query(Job.score).filter(Job.score.isnot(None), Job.status == "new").all()
         avg = sum(r[0] for r in avg_score_rows) / len(avg_score_rows) if avg_score_rows else 0
         return {
@@ -263,11 +241,9 @@ def job_to_dict(job: Job, full: bool = False) -> dict:
         "status": job.status,
         "posted_at": job.posted_at.isoformat() if job.posted_at else None,
         "scraped_at": job.scraped_at.isoformat() if job.scraped_at else None,
-        "has_resume": bool(job.resume_docx_path),
     }
     if full:
         d["jd_text"] = job.jd_text
-        d["tailored_bullets"] = job.tailored_bullets
         d["drafted_answers"] = job.drafted_answers or {}
         d["user_notes"] = job.user_notes
     return d

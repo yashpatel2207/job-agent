@@ -1,21 +1,19 @@
 # Job Agent
 
-A personal job application agent: scrapes target companies daily, scores postings against your criteria, generates tailored resumes, and prefills application forms for you to review and submit.
+A personal job application agent: scrapes target companies daily and scores postings against your criteria so you can review the ranked queue each morning.
 
 ## What it does
 
 - Scrapes Greenhouse, Lever, Ashby, and Workday career pages for ~25 companies you configure
-- Scores each new job against your criteria using Claude
-- For jobs scoring 7+, generates a tailored DOCX resume (selects and reorders bullets from your master resume, never fabricates)
+- Scores each new job against your criteria using a free-tier LLM
 - Surfaces the queue in a Next.js dashboard each morning
-- On approval, opens Chromium with the application form prefilled for final review
-- You review, edit essay questions in your own voice, and submit manually
+- You write your own essay answers in your own voice, tailor your resume yourself, and apply manually
 
 ## Stack
 
-- Python 3.11 backend (scrapers, Claude API calls, Playwright)
+- Python 3.11 backend (scrapers, LLM API calls)
 - SQLite locally, Postgres in production (Supabase or Neon free tier)
-- FastAPI server exposes jobs to the frontend and triggers prefill on demand
+- FastAPI server exposes jobs to the frontend
 - Next.js 14 + Tailwind frontend, deployed to Vercel free tier
 - GitHub Actions runs the daily scrape at 10am UTC (6am ET)
 
@@ -49,7 +47,7 @@ cp profile.example.json profile.json
 cp master_resume.example.json master_resume.json
 ```
 
-Edit both files with your real info. The `profile.json` holds personal details, work auth, EEO defaults, and saved essay answers. The `master_resume.json` is your full resume with every bullet tagged by skill and scope - tailoring selects from this pool.
+Edit both files with your real info. The `profile.json` holds personal details, work auth, EEO defaults, and saved essay answers. The `master_resume.json` is your full resume — kept in the DB so the dashboard can reference it later if you ever add a tailoring feature back.
 
 ### 3. Configure your target companies
 
@@ -86,7 +84,7 @@ python seed.py
 python main.py
 ```
 
-This scrapes all companies, scores new jobs, and generates tailored resumes. First run takes 5-10 minutes depending on how many roles match.
+This scrapes all companies and scores new jobs. First run takes 2-3 minutes depending on how many roles match.
 
 ### 6. Start the local API and dashboard
 
@@ -118,10 +116,8 @@ Open http://localhost:3000.
 1. GitHub Actions runs `main.py` at 6am ET, populates the database
 2. Morning: open the dashboard, review ranked jobs
 3. For ones you want to apply to, open the detail page and write your custom essay answers in your own voice
-4. Start the local API (`uvicorn server:app` in backend folder)
-5. Click "Approve and prefill" - Chromium opens with the form filled
-6. You scan, tweak, submit
-7. Click "Mark as applied" on the detail page
+4. Tailor your resume yourself, apply on the company's site
+5. Click "Mark as applied" on the detail page (and "Undo" from the Applied tab if you tap it by mistake)
 
 ## Deploy
 
@@ -153,15 +149,12 @@ backend/
   companies.yaml           target companies + criteria
   profile.json             personal info, EEO, saved answers (gitignored)
   master_resume.json       your full tagged resume (gitignored)
-  main.py                  pipeline entry: scrape -> score -> tailor
+  main.py                  pipeline entry: scrape -> score
   seed.py                  load profile + resume into DB
   server.py                FastAPI for the dashboard
   scraper/                 greenhouse, lever, ashby, workday clients
-  scorer/                  Claude scoring
-  tailor/                  resume tailor + DOCX renderer
-  prefill/                 Playwright form fillers per ATS
+  scorer/                  LLM scoring
   db/models.py             SQLAlchemy models
-  output/resumes/          generated DOCX files
 
 frontend/
   app/
@@ -190,4 +183,4 @@ These are candidates for v2 once you've used v1 for two weeks and know what's ac
 ## Costs
 
 - Hosting: $0 (GitHub Actions + Vercel + Neon/Supabase free tiers)
-- Claude API: ~$3-8/month at 5-10 scored jobs per day plus tailoring
+- LLM API: $0 (runs entirely on free-tier providers — Gemini, Groq, Cerebras, Mistral, NVIDIA NIM, OpenRouter)

@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Job, triggerPrefill, updateStatus } from "@/lib/api";
+import { Job, updateStatus } from "@/lib/api";
 import { MatchBadge } from "./MatchBadge";
 
 function timeAgo(iso: string | null): string {
@@ -17,20 +16,6 @@ function timeAgo(iso: string | null): string {
 }
 
 export function JobCard({ job, onChange }: { job: Job; onChange?: () => void }) {
-  const [busy, setBusy] = useState(false);
-
-  const handlePrefill = async () => {
-    setBusy(true);
-    try {
-      await triggerPrefill(job.id);
-      alert("Chromium is opening on your laptop. Review the form, tweak anything, and submit.");
-    } catch (e) {
-      alert("Prefill failed. Is the local server running? (python -m uvicorn server:app)");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const handleSkip = async () => {
     if (!confirm(`Skip ${job.company}?`)) return;
     await updateStatus(job.id, "skipped");
@@ -46,9 +31,6 @@ export function JobCard({ job, onChange }: { job: Job; onChange?: () => void }) 
               {job.title}
             </Link>
             <MatchBadge score={job.score} />
-            {job.has_resume && (
-              <span className="text-xs text-[hsl(var(--muted-foreground))]">· resume ready</span>
-            )}
           </div>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {job.company} · {job.location || "location not specified"} · {job.ats}
@@ -74,16 +56,9 @@ export function JobCard({ job, onChange }: { job: Job; onChange?: () => void }) 
       )}
 
       <div className="flex gap-2 pt-1">
-        <button
-          onClick={handlePrefill}
-          disabled={busy || !job.has_resume}
-          className="flex-1 text-sm font-medium bg-[hsl(var(--foreground))] text-[hsl(var(--background))] px-3 py-1.5 rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {busy ? "Opening..." : "Approve and prefill"}
-        </button>
         <Link
           href={`/job/${job.id}`}
-          className="text-sm px-3 py-1.5 rounded-md border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+          className="flex-1 text-sm font-medium text-center bg-[hsl(var(--foreground))] text-[hsl(var(--background))] px-3 py-1.5 rounded-md hover:opacity-90"
         >
           View details
         </Link>

@@ -2,9 +2,8 @@
 
 Usage:
     python clean.py --all       delete every row in jobs
-    python clean.py --rescore   null out score + tailored fields so the next
-                                pipeline run re-scores and re-tailors everything
-                                without re-scraping
+    python clean.py --rescore   null out score fields so the next pipeline run
+                                re-scores everything without re-scraping
 """
 import argparse
 import sys
@@ -41,7 +40,7 @@ def reset_scores():
             print("no scored jobs to reset.")
             return
         if not _confirm(
-            f"Reset score + tailored fields on {n} jobs (keeps the rows so no re-scrape)?"
+            f"Reset score fields on {n} jobs (keeps the rows so no re-scrape)?"
         ):
             print("aborted.")
             return
@@ -50,8 +49,6 @@ def reset_scores():
                 Job.score: None,
                 Job.score_reasons: None,
                 Job.red_flags: None,
-                Job.tailored_bullets: None,
-                Job.resume_docx_path: None,
             },
             synchronize_session=False,
         )
@@ -65,7 +62,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--all", action="store_true", help="delete every row in jobs")
-    g.add_argument("--rescore", action="store_true", help="null out score + tailored fields")
+    g.add_argument("--rescore", action="store_true", help="null out score fields")
     args = p.parse_args()
 
     if args.all:

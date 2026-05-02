@@ -5,7 +5,6 @@ Steps:
   1. Scrape all configured companies
   2. Dedupe, save new jobs
   3. Score unscored jobs with Claude
-  4. Tailor resumes for jobs scoring >= 7.0
 """
 import os
 import shutil
@@ -19,7 +18,6 @@ load_dotenv()
 from db.models import Settings, get_session, init_db
 from scraper import scrape_all, filter_new, save_jobs
 from scorer import score_all_unscored
-from tailor import tailor_all_pending
 
 
 def is_paused() -> bool:
@@ -64,16 +62,13 @@ def main():
         print("Use 'Run now' from the dashboard to override.")
         return 0
 
-    print("\n[1/3] Scraping...")
+    print("\n[1/2] Scraping...")
     scraped = scrape_all()
     new_jobs = filter_new(scraped)
     save_jobs(new_jobs)
 
-    print("\n[2/3] Scoring...")
+    print("\n[2/2] Scoring...")
     score_all_unscored()
-
-    print("\n[3/3] Tailoring resumes...")
-    tailor_all_pending(min_score=7.0)
 
     print("\nDone. Open the dashboard to review.")
 

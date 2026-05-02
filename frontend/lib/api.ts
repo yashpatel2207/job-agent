@@ -13,19 +13,7 @@ export interface Job {
   status: string;
   posted_at: string | null;
   scraped_at: string | null;
-  has_resume: boolean;
   jd_text?: string;
-  tailored_bullets?: {
-    summary: string;
-    experience: Array<{
-      company: string;
-      role: string;
-      dates: string;
-      bullets: string[];
-    }>;
-    changes_summary: string;
-    skills_emphasized: string[];
-  };
   drafted_answers?: Record<string, string>;
   user_notes?: string;
 }
@@ -75,11 +63,6 @@ export async function saveAnswers(id: string, answers: Record<string, string>): 
     body: JSON.stringify({ answers }),
   });
   if (!res.ok) throw new Error("Failed to save answers");
-}
-
-export async function triggerPrefill(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/jobs/${id}/prefill`, { method: "POST" });
-  if (!res.ok) throw new Error("Failed to trigger prefill");
 }
 
 export interface CronRun {

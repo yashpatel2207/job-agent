@@ -24,8 +24,6 @@ class Job(Base):
     score_reasons = Column(JSON)
     red_flags = Column(JSON)
 
-    resume_docx_path = Column(String)
-    tailored_bullets = Column(JSON)
     drafted_answers = Column(JSON)
 
     status = Column(String, default="new", index=True)

@@ -47,10 +47,3 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
         run: python main.py
-
-      - name: Upload tailored resumes
-        uses: actions/upload-artifact@v5
-        with:
-          name: tailored-resumes-${{ github.run_id }}
-          path: backend/output/resumes/
-          retention-days: 30
