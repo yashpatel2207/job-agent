@@ -16,6 +16,7 @@ node_modules/
 frontend/.next/
 frontend/out/
 frontend/.env.local
+frontend/tsconfig.tsbuildinfo
 
 .DS_Store
 .vscode/
