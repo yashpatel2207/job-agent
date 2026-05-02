@@ -252,6 +252,7 @@ def _tailor_one(job: Job, master: dict) -> tuple[dict, Path]:
 
 def tailor_all_pending(min_score: float = 7.0):
     session = get_session()
+    session.expire_on_commit = False
     try:
         master_row = session.query(MasterResume).first()
         if not master_row:
