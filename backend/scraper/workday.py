@@ -29,12 +29,18 @@ def _fetch_detail(session: requests.Session, base: str, site: str, tenant: str,
     jd_html = info.get("jobDescription", "")
     jd_text = BeautifulSoup(jd_html, "html.parser").get_text("\n", strip=True)
 
+    # Workday's `postedOn` is a human string ("Posted Yesterday", "Posted 2 Days
+    # Ago") — useless for ordering. `startDate` is the ISO date; prefer it.
     posted_at = None
-    if info.get("postedOn"):
+    for key in ("startDate", "postedOn"):
+        raw = info.get(key)
+        if not raw:
+            continue
         try:
-            posted_at = datetime.fromisoformat(info["postedOn"].replace("Z", "+00:00"))
+            posted_at = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            break
         except ValueError:
-            pass
+            continue
 
     return ScrapedJob(
         company=company_name,
