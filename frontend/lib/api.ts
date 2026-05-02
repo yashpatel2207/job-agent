@@ -14,7 +14,6 @@ export interface Job {
   posted_at: string | null;
   scraped_at: string | null;
   jd_text?: string;
-  drafted_answers?: Record<string, string>;
   user_notes?: string;
 }
 
@@ -54,15 +53,6 @@ export async function updateStatus(id: string, status: string, notes?: string): 
     body: JSON.stringify({ status, notes }),
   });
   if (!res.ok) throw new Error("Failed to update status");
-}
-
-export async function saveAnswers(id: string, answers: Record<string, string>): Promise<void> {
-  const res = await fetch(`${API_URL}/api/jobs/${id}/answers`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ answers }),
-  });
-  if (!res.ok) throw new Error("Failed to save answers");
 }
 
 export interface CronRun {

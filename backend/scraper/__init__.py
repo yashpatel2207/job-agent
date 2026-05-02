@@ -81,20 +81,33 @@ def scrape_all() -> list[ScrapedJob]:
 
 
 def filter_new(jobs: list[ScrapedJob]) -> list[ScrapedJob]:
+    if not jobs:
+        return []
+
+    incoming_urls = list({j.apply_url for j in jobs})
+    existing: set[str] = set()
+    # Chunk to stay well under SQLite's host-parameter limit (999 pre-3.32).
+    CHUNK = 500
     session = get_session()
     try:
-        existing_ids = {row.id for row in session.query(Job.id).all()}
+        for i in range(0, len(incoming_urls), CHUNK):
+            rows = session.query(Job.apply_url).filter(
+                Job.apply_url.in_(incoming_urls[i:i + CHUNK])
+            ).all()
+            existing.update(url for (url,) in rows)
     finally:
         session.close()
 
-    new = []
+    new: list[ScrapedJob] = []
+    seen: set[str] = set()
     dropped_titles = 0
     for j in jobs:
-        if j.id in existing_ids:
+        if j.apply_url in existing or j.apply_url in seen:
             continue
         if not title_is_relevant(j.title):
             dropped_titles += 1
             continue
+        seen.add(j.apply_url)
         new.append(j)
     print(f"New jobs: {len(new)} (dropped {dropped_titles} by title filter)")
     return new

@@ -1,6 +1,6 @@
 """Database models. SQLite locally, Postgres in production - same schema."""
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, create_engine, JSON
+from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, create_engine, JSON, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 
@@ -23,8 +23,6 @@ class Job(Base):
     score = Column(Float)
     score_reasons = Column(JSON)
     red_flags = Column(JSON)
-
-    drafted_answers = Column(JSON)
 
     status = Column(String, default="new", index=True)
     applied_at = Column(DateTime)
@@ -57,6 +55,17 @@ class Settings(Base):
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./job_agent.db")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
+
+if DATABASE_URL.startswith("sqlite"):
+    # WAL lets the 10-thread scraper pool read+write concurrently without
+    # "database is locked" errors. NORMAL sync is the recommended pairing.
+    @event.listens_for(engine, "connect")
+    def _enable_wal(dbapi_conn, _record):
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA synchronous=NORMAL")
+        cur.close()
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

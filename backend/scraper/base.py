@@ -17,5 +17,8 @@ class ScrapedJob:
 
     @property
     def id(self) -> str:
-        key = f"{self.company.lower()}::{self.title.lower()}::{self.apply_url}"
+        # Title is intentionally NOT part of the hash: companies rename postings
+        # ("Senior" -> "Staff") without changing the apply_url, and we don't want
+        # those to look like brand-new jobs.
+        key = f"{self.company.lower()}::{self.apply_url}"
         return hashlib.sha256(key.encode()).hexdigest()[:16]

@@ -55,11 +55,11 @@ Two-stage filter:
 
 ### API server (`backend/server.py`)
 
-FastAPI. CORS is open to any `localhost:*` origin. Endpoints: `/api/jobs`, `/api/jobs/{id}`, `/api/jobs/{id}/status`, `/api/jobs/{id}/answers`, `/api/stats`, `/api/cron/{status,trigger,pause}`. The cron endpoints proxy to the GitHub Actions API (requires `GITHUB_TOKEN` with `actions:write`); `pause` toggles a row in the `Settings` table that `main.py` reads at the top of each run. `init_db()` runs on startup — there are no migrations; schema changes go in [db/models.py](backend/db/models.py) and apply on next boot.
+FastAPI. CORS is open to any `localhost:*` origin. Endpoints: `/api/jobs`, `/api/jobs/{id}`, `/api/jobs/{id}/status`, `/api/company-notes/{company}`, `/api/stats`, `/api/cron/{status,trigger,pause}`. The cron endpoints proxy to the GitHub Actions API (requires `GITHUB_TOKEN` with `actions:write`); `pause` toggles a row in the `Settings` table that `main.py` reads at the top of each run. `init_db()` runs on startup — there are no migrations; schema changes go in [db/models.py](backend/db/models.py) and apply on next boot.
 
 ### Frontend (`frontend/`)
 
-Next.js 14 App Router + Tailwind. Three routes: queue ([app/page.tsx](frontend/app/page.tsx)), detail/essay editor ([app/job/[id]/page.tsx](frontend/app/job/%5Bid%5D/page.tsx)), applied history ([app/applied/page.tsx](frontend/app/applied/page.tsx)). All backend access goes through [lib/api.ts](frontend/lib/api.ts) — `NEXT_PUBLIC_API_URL` defaults to `http://localhost:8000`.
+Next.js 14 App Router + Tailwind. Two routes: queue ([app/page.tsx](frontend/app/page.tsx)) and applied history ([app/applied/page.tsx](frontend/app/applied/page.tsx)). All backend access goes through [lib/api.ts](frontend/lib/api.ts) — `NEXT_PUBLIC_API_URL` defaults to `http://localhost:8000`.
 
 ### Daily cron (`.github/workflows/daily-scrape.yml`)
 

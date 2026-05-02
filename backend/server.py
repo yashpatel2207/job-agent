@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from datetime import datetime
+from typing import Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -66,7 +67,7 @@ def get_job(job_id: str):
 
 
 class UpdateJobStatus(BaseModel):
-    status: str
+    status: Literal["new", "applied", "skipped"]
     notes: str | None = None
 
 
@@ -84,24 +85,6 @@ def update_status(job_id: str, payload: UpdateJobStatus):
             job.applied_at = datetime.utcnow()
         elif payload.status == "new":
             job.applied_at = None
-        session.commit()
-        return {"ok": True}
-    finally:
-        session.close()
-
-
-class SaveAnswers(BaseModel):
-    answers: dict
-
-
-@app.post("/api/jobs/{job_id}/answers")
-def save_answers(job_id: str, payload: SaveAnswers):
-    session = get_session()
-    try:
-        job = session.query(Job).filter(Job.id == job_id).first()
-        if not job:
-            raise HTTPException(404)
-        job.drafted_answers = payload.answers
         session.commit()
         return {"ok": True}
     finally:
@@ -308,6 +291,5 @@ def job_to_dict(job: Job, full: bool = False) -> dict:
     }
     if full:
         d["jd_text"] = job.jd_text
-        d["drafted_answers"] = job.drafted_answers or {}
         d["user_notes"] = job.user_notes
     return d
