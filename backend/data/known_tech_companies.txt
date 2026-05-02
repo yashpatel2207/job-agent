@@ -1,0 +1,719 @@
+# Quality gate for import_companies.py.
+# Aggregator entries whose company name doesn't match anything below are skipped.
+# One company per line, lowercase, simple punctuation stripped. Comments allowed.
+# Edit freely — this is the supported way to broaden the universe.
+
+# === existing 39 (companies.yaml at the time of expansion) ===
+anthropic
+openai
+stripe
+airbnb
+databricks
+datadog
+cloudflare
+elastic
+mongodb
+twilio
+doordash
+instacart
+reddit
+pinterest
+roblox
+lyft
+robinhood
+notion
+figma
+plaid
+brex
+asana
+squarespace
+toast
+affirm
+linear
+vercel
+replit
+ramp
+mercury
+discord
+hex
+modal
+perplexity
+cursor
+block
+coinbase
+chime
+sofi
+
+# === big tech / FAANG-tier ===
+google
+alphabet
+meta
+facebook
+apple
+amazon
+microsoft
+netflix
+nvidia
+oracle
+salesforce
+adobe
+intuit
+servicenow
+workday
+sap
+ibm
+intel
+amd
+qualcomm
+cisco
+vmware
+
+# === second-tier consumer / SaaS ===
+spotify
+uber
+shopify
+etsy
+ebay
+zillow
+redfin
+opendoor
+peloton
+strava
+duolingo
+chess
+hinge
+bumble
+pinterest
+snap
+snapchat
+twitter
+x
+youtube
+twitch
+zoom
+slack
+dropbox
+box
+docusign
+asana
+airtable
+miro
+mural
+loom
+calendly
+typeform
+hubspot
+mailchimp
+zendesk
+freshworks
+intercom
+
+# === dev tools / infra ===
+github
+gitlab
+bitbucket
+atlassian
+jira
+confluence
+sentry
+launchdarkly
+optimizely
+amplitude
+mixpanel
+segment
+heap
+posthog
+fullstory
+hotjar
+pendo
+split
+heroku
+netlify
+render
+fly
+railway
+supabase
+planetscale
+cockroachlabs
+hashicorp
+docker
+gitpod
+pulumi
+terraform
+fastly
+akamai
+auth0
+okta
+onelogin
+duo
+yubico
+1password
+lastpass
+bitwarden
+vault
+snyk
+chainguard
+wiz
+crowdstrike
+sentinelone
+tenable
+rapid7
+
+# === fintech ===
+square
+paypal
+venmo
+cashapp
+wise
+remitly
+betterment
+wealthfront
+acorns
+plaid
+marqeta
+adyen
+checkout
+nuvei
+toast
+gusto
+rippling
+deel
+remote
+trinet
+justworks
+zenefits
+ramp
+brex
+divvy
+mercury
+relay
+column
+modern treasury
+unit
+synctera
+moov
+
+# === e-commerce ===
+shopify
+bigcommerce
+woocommerce
+magento
+salesforce commerce
+amazon
+walmart
+target
+costco
+wayfair
+chewy
+warbyparker
+casper
+allbirds
+glossier
+gymshark
+fashionnova
+revolve
+poshmark
+mercari
+depop
+thredup
+stockx
+goat
+grailed
+
+# === ai / ml startups ===
+anthropic
+openai
+mistral
+cohere
+huggingface
+together ai
+fireworks ai
+groq
+cerebras
+sambanova
+inflection
+character ai
+adept
+imbue
+runway
+elevenlabs
+midjourney
+stability
+pinecone
+weaviate
+chroma
+qdrant
+milvus
+zilliz
+langchain
+llamaindex
+scale ai
+labelbox
+snorkel
+roboflow
+hex
+mode
+sigma
+hightouch
+fivetran
+dbt
+
+# === data / analytics ===
+snowflake
+databricks
+mongodb
+redis
+elastic
+confluent
+cockroachlabs
+clickhouse
+starburst
+dremio
+tabular
+materialize
+rockset
+imply
+estuary
+airbyte
+prefect
+dagster
+flyte
+modal
+weights and biases
+neptune
+comet
+arize
+fiddler
+truera
+
+# === healthcare / biotech ===
+flatiron
+oscar
+hims
+ro
+forward
+one medical
+amwell
+teladoc
+livongo
+omada
+big health
+spring health
+modern health
+calm
+headspace
+ginger
+talkspace
+betterhelp
+
+# === productivity / collab ===
+notion
+coda
+roam
+obsidian
+craft
+mem
+reflect
+logseq
+clickup
+monday
+basecamp
+trello
+todoist
+things
+
+# === media / content ===
+substack
+ghost
+medium
+mirror
+patreon
+gumroad
+podia
+teachable
+thinkific
+udemy
+coursera
+masterclass
+skillshare
+duolingo
+
+# === transport / logistics ===
+uber
+lyft
+doordash
+instacart
+gopuff
+shipt
+flexport
+convoy
+samsara
+nuro
+zoox
+waymo
+cruise
+aurora
+motional
+wayve
+
+# === climate / energy ===
+tesla
+rivian
+lucid
+sunrun
+sunnova
+form energy
+commonwealth fusion
+helion
+fervo
+stripe climate
+
+# === gaming ===
+roblox
+unity
+epic games
+riot games
+blizzard
+ea
+ubisoft
+take two
+zynga
+king
+supercell
+niantic
+discord
+twitch
+
+# === professional services / B2B SaaS ===
+gong
+chorus
+outreach
+salesloft
+zoominfo
+clearbit
+6sense
+demandbase
+drift
+qualified
+clari
+people ai
+highspot
+seismic
+showpad
+docusign
+ironclad
+contractbook
+juro
+linksquares
+spotdraft
+
+# === marketing / advertising ===
+hubspot
+marketo
+mailchimp
+sendgrid
+twilio
+constant contact
+klaviyo
+attentive
+postscript
+braze
+iterable
+customer io
+movable ink
+mparticle
+adobe
+oracle marketing
+salesforce marketing
+the trade desk
+applovin
+unity ads
+adjust
+appsflyer
+branch
+liftoff
+
+# === social / consumer ===
+discord
+reddit
+pinterest
+snap
+twitter
+quora
+nextdoor
+strava
+duolingo
+spotify
+soundcloud
+bandcamp
+tidal
+audible
+goodreads
+letterboxd
+
+# === yc-darling startups ===
+gusto
+dropbox
+airbnb
+stripe
+coinbase
+instacart
+docker
+twitch
+zapier
+amplitude
+segment
+mixpanel
+checkr
+flexport
+brex
+faire
+clipboard health
+deel
+ramp
+mercury
+modal
+hex
+linear
+vanta
+drata
+secureframe
+notion
+retool
+plaid
+scale ai
+snorkel
+together ai
+truffle security
+benchling
+benchsci
+helion
+boom
+hadrian
+anduril
+applied intuition
+clutter
+stord
+gem
+ashby
+lattice
+gusto
+rippling
+deel
+remote
+checkr
+finch
+moov
+unit
+mercury
+column
+lithic
+bond
+modern treasury
+
+# === enterprise / database / observability ===
+splunk
+sumo logic
+new relic
+appdynamics
+dynatrace
+honeycomb
+datadog
+grafana
+chronosphere
+lightstep
+elastic
+sumo
+loggly
+papertrail
+pagerduty
+opsgenie
+victorops
+incident io
+firehydrant
+rootly
+
+# === developer education / docs ===
+mintlify
+algolia
+vercel
+netlify
+sanity
+contentful
+strapi
+ghost
+gitbook
+readme
+swagger
+postman
+insomnia
+
+# === robotics / hardware adjacent (frontend roles uncommon but possible) ===
+boston dynamics
+agility robotics
+figure
+1x
+sanctuary
+covariant
+formant
+freenome
+olive ai
+osaro
+
+# === climate-tech, energy, agtech ===
+indigo
+plenty
+bowery
+appharvest
+cana
+aleph farms
+upside foods
+believer meats
+formo
+
+# === construction tech, real estate tech ===
+procore
+plangrid
+buildertrend
+opendoor
+compass
+homelight
+divvy homes
+flock
+pacaso
+side
+guesty
+hostfully
+
+# === insurtech ===
+lemonade
+root
+metromile
+hippo
+oscar
+clover
+bright health
+devoted health
+alan
+kin
+hippo
+trov
+
+# === legaltech ===
+clio
+ironclad
+juro
+linksquares
+contractbook
+spotdraft
+hellosign
+docusign
+pactsafe
+
+# === edtech ===
+coursera
+udemy
+masterclass
+skillshare
+duolingo
+quizlet
+chegg
+brainly
+guild
+handshake
+forage
+outschool
+brilliant
+codecademy
+khan academy
+prendaschool
+prisma
+
+# === hr / people ===
+gusto
+rippling
+deel
+remote
+oyster
+papaya
+trinet
+justworks
+zenefits
+namely
+bamboo
+hibob
+lattice
+culture amp
+15five
+peakon
+betterup
+guild
+maven
+
+# === cybersecurity ===
+crowdstrike
+sentinelone
+tenable
+rapid7
+qualys
+snyk
+chainguard
+wiz
+orca
+oligo
+cycode
+ox security
+endor labs
+phylum
+socket
+runzero
+runme
+
+# === DevTools  ===
+docker
+render
+fly
+railway
+upstash
+vercel
+netlify
+cloudflare
+fastly
+akamai
+edgio
+deno
+bun
+turbopack
+swc
+prisma
+drizzle
+tailwind
+shadcn
+clerk
+auth0
+stytch
+workos
+
+# === everything else (commonly-seen ATS users) ===
+wikimedia
+mozilla
+khan academy
+ny times
+washington post
+bloomberg
+reuters
+hearst
+condé nast
+vox
+buzzfeed
+the atlantic
+new yorker
+politico
+axios
+business insider
+techcrunch
+the verge
+wired
+forbes
+
+# end

@@ -10,6 +10,11 @@ from bs4 import BeautifulSoup
 from .base import ScrapedJob
 
 DETAIL_WORKERS = 6
+# Hard upper bound per company. Megacorp tenants (Walmart, Target, Cisco) post
+# 5k+ jobs on a single Workday board — paginating all of them can hang the
+# pipeline for an hour while our title filter drops ~95% as backend/non-frontend.
+# 500 covers any plausible frontend cohort and bounds worst-case wall time.
+MAX_POSTINGS_PER_COMPANY = 500
 
 
 def _fetch_detail(session: requests.Session, base: str, site: str, tenant: str,
@@ -80,6 +85,9 @@ def scrape(company_name: str, tenant: str, wd_num: int, site: str) -> list[Scrap
             if len(postings) < 20:
                 break
             offset += 20
+            if offset >= MAX_POSTINGS_PER_COMPANY:
+                print(f"  workday {tenant}: hit MAX_POSTINGS_PER_COMPANY={MAX_POSTINGS_PER_COMPANY}, stopping pagination")
+                break
     finally:
         session.close()
 

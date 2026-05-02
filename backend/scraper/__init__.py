@@ -2,6 +2,7 @@
 import re
 import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta
 from pathlib import Path
 from . import greenhouse, lever, ashby, workday
 from .base import ScrapedJob
@@ -98,18 +99,32 @@ def filter_new(jobs: list[ScrapedJob]) -> list[ScrapedJob]:
     finally:
         session.close()
 
+    criteria = (load_config().get("criteria") or {})
+    max_age_days = criteria.get("max_posting_age_days", 30)
+    age_cutoff = datetime.utcnow() - timedelta(days=max_age_days)
+
     new: list[ScrapedJob] = []
     seen: set[str] = set()
     dropped_titles = 0
+    dropped_age = 0
     for j in jobs:
         if j.apply_url in existing or j.apply_url in seen:
             continue
         if not title_is_relevant(j.title):
             dropped_titles += 1
             continue
+        # posted_at is None when the ATS doesn't expose it — keep, can't tell.
+        # Greenhouse/Ashby/Workday return tz-aware UTC; Lever returns tz-naive local. Strip
+        # tzinfo so both compare cleanly against a naive cutoff (a few hours of skew is
+        # irrelevant against a 30-day window).
+        if j.posted_at is not None:
+            posted = j.posted_at.replace(tzinfo=None) if j.posted_at.tzinfo else j.posted_at
+            if posted < age_cutoff:
+                dropped_age += 1
+                continue
         seen.add(j.apply_url)
         new.append(j)
-    print(f"New jobs: {len(new)} (dropped {dropped_titles} by title filter)")
+    print(f"New jobs: {len(new)} (dropped {dropped_titles} by title, {dropped_age} by age >{max_age_days}d)")
     return new
 
 

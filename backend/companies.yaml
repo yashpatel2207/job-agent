@@ -139,6 +139,1339 @@ companies:
   #   tenant: workday
   #   wd_num: 5
   #   site: Workday
+  - name: 6sense
+    slug: 6sense
+    ats: greenhouse
+  - name: acorns
+    slug: acorns
+    ats: greenhouse
+  - name: adept
+    slug: adept
+    ats: greenhouse
+  - name: adyen
+    slug: adyen
+    ats: greenhouse
+  - name: agility robotics
+    slug: agilityrobotics
+    ats: greenhouse
+  - name: airbyte
+    slug: airbyte
+    ats: greenhouse
+  - name: airtable
+    slug: airtable
+    ats: greenhouse
+  - name: algolia
+    slug: algolia
+    ats: greenhouse
+  - name: allbirds
+    slug: allbirds
+    ats: greenhouse
+  - name: amplitude
+    slug: amplitude
+    ats: greenhouse
+  - name: amwell
+    slug: amwell
+    ats: greenhouse
+  - name: applied intuition
+    slug: appliedintuition
+    ats: greenhouse
+  - name: applovin
+    slug: applovin
+    ats: greenhouse
+  - name: appsflyer
+    slug: appsflyer
+    ats: greenhouse
+  - name: axios
+    slug: axios
+    ats: greenhouse
+  - name: benchling
+    slug: benchling
+    ats: greenhouse
+  - name: betterhelp
+    slug: betterhelp
+    ats: greenhouse
+  - name: betterment
+    slug: betterment
+    ats: greenhouse
+  - name: betterup
+    slug: betterup
+    ats: greenhouse
+  - name: bigcommerce
+    slug: bigcommerce
+    ats: greenhouse
+  - name: bitwarden
+    slug: bitwarden
+    ats: greenhouse
+  - name: brainly
+    slug: brainly
+    ats: greenhouse
+  - name: branch
+    slug: branch
+    ats: greenhouse
+  - name: braze
+    slug: braze
+    ats: greenhouse
+  - name: bumble
+    slug: bumble
+    ats: greenhouse
+  - name: buzzfeed
+    slug: buzzfeed
+    ats: greenhouse
+  - name: calendly
+    slug: calendly
+    ats: greenhouse
+  - name: calm
+    slug: calm
+    ats: greenhouse
+  - name: casper
+    slug: casper
+    ats: greenhouse
+  - name: chainguard
+    slug: chainguard
+    ats: greenhouse
+  - name: checkr
+    slug: checkr
+    ats: greenhouse
+  - name: clickhouse
+    slug: clickhouse
+    ats: greenhouse
+  - name: clickup
+    slug: clickup
+    ats: greenhouse
+  - name: clipboard health
+    slug: clipboardhealth
+    ats: greenhouse
+  - name: cockroachlabs
+    slug: cockroachlabs
+    ats: greenhouse
+  - name: coda
+    slug: coda
+    ats: greenhouse
+  - name: comet
+    slug: comet
+    ats: greenhouse
+  - name: constant contact
+    slug: constantcontact
+    ats: greenhouse
+  - name: contentful
+    slug: contentful
+    ats: greenhouse
+  - name: coursera
+    slug: coursera
+    ats: greenhouse
+  - name: cruise
+    slug: cruise
+    ats: greenhouse
+  - name: culture amp
+    slug: cultureamp
+    ats: greenhouse
+  - name: customer io
+    slug: customerio
+    ats: greenhouse
+  - name: demandbase
+    slug: demandbase
+    ats: greenhouse
+  - name: divvy homes
+    slug: divvyhomes
+    ats: greenhouse
+  - name: drata
+    slug: drata
+    ats: greenhouse
+  - name: dremio
+    slug: dremio
+    ats: greenhouse
+  - name: drift
+    slug: drift
+    ats: greenhouse
+  - name: dropbox
+    slug: dropbox
+    ats: greenhouse
+  - name: duolingo
+    slug: duolingo
+    ats: greenhouse
+  - name: endor labs
+    slug: endorlabs
+    ats: greenhouse
+  - name: epic games
+    slug: epicgames
+    ats: greenhouse
+  - name: faire
+    slug: faire
+    ats: greenhouse
+  - name: fashionnova
+    slug: fashionnova
+    ats: greenhouse
+  - name: fastly
+    slug: fastly
+    ats: greenhouse
+  - name: figure
+    slug: figure
+    ats: greenhouse
+  - name: firehydrant
+    slug: firehydrant
+    ats: greenhouse
+  - name: fireworks ai
+    slug: fireworksai
+    ats: greenhouse
+  - name: fivetran
+    slug: fivetran
+    ats: greenhouse
+  - name: flexport
+    slug: flexport
+    ats: greenhouse
+  - name: forage
+    slug: forage
+    ats: greenhouse
+  - name: forbes
+    slug: forbes
+    ats: greenhouse
+  - name: freenome
+    slug: freenome
+    ats: greenhouse
+  - name: fullstory
+    slug: fullstory
+    ats: greenhouse
+  - name: ghost
+    slug: ghost
+    ats: greenhouse
+  - name: ginger
+    slug: ginger
+    ats: greenhouse
+  - name: github
+    slug: github
+    ats: greenhouse
+  - name: gitlab
+    slug: gitlab
+    ats: greenhouse
+  - name: gitpod
+    slug: gitpod
+    ats: greenhouse
+  - name: glossier
+    slug: glossier
+    ats: greenhouse
+  - name: grailed
+    slug: grailed
+    ats: greenhouse
+  - name: groq
+    slug: groq
+    ats: greenhouse
+  - name: guild
+    slug: guild
+    ats: greenhouse
+  - name: gusto
+    slug: gusto
+    ats: greenhouse
+  - name: gymshark
+    slug: gymshark
+    ats: greenhouse
+  - name: hashicorp
+    slug: hashicorp
+    ats: greenhouse
+  - name: headspace
+    slug: headspace
+    ats: greenhouse
+  - name: heap
+    slug: heap
+    ats: greenhouse
+  - name: hellosign
+    slug: hellosign
+    ats: greenhouse
+  - name: hightouch
+    slug: hightouch
+    ats: greenhouse
+  - name: homelight
+    slug: homelight
+    ats: greenhouse
+  - name: honeycomb
+    slug: honeycomb
+    ats: greenhouse
+  - name: hotjar
+    slug: hotjar
+    ats: greenhouse
+  - name: imbue
+    slug: imbue
+    ats: greenhouse
+  - name: imply
+    slug: imply
+    ats: greenhouse
+  - name: indigo
+    slug: indigo
+    ats: greenhouse
+  - name: intercom
+    slug: intercom
+    ats: greenhouse
+  - name: iterable
+    slug: iterable
+    ats: greenhouse
+  - name: justworks
+    slug: justworks
+    ats: greenhouse
+  - name: khan academy
+    slug: khanacademy
+    ats: greenhouse
+  - name: klaviyo
+    slug: klaviyo
+    ats: greenhouse
+  - name: labelbox
+    slug: labelbox
+    ats: greenhouse
+  - name: lastpass
+    slug: lastpass
+    ats: greenhouse
+  - name: lattice
+    slug: lattice
+    ats: greenhouse
+  - name: launchdarkly
+    slug: launchdarkly
+    ats: greenhouse
+  - name: liftoff
+    slug: liftoff
+    ats: greenhouse
+  - name: lithic
+    slug: lithic
+    ats: greenhouse
+  - name: livongo
+    slug: livongo
+    ats: greenhouse
+  - name: mailchimp
+    slug: mailchimp
+    ats: greenhouse
+  - name: marqeta
+    slug: marqeta
+    ats: greenhouse
+  - name: masterclass
+    slug: masterclass
+    ats: greenhouse
+  - name: materialize
+    slug: materialize
+    ats: greenhouse
+  - name: maven
+    slug: maven
+    ats: greenhouse
+  - name: medium
+    slug: medium
+    ats: greenhouse
+  - name: mercari
+    slug: mercari
+    ats: greenhouse
+  - name: metromile
+    slug: metromile
+    ats: greenhouse
+  - name: mirror
+    slug: mirror
+    ats: greenhouse
+  - name: mixpanel
+    slug: mixpanel
+    ats: greenhouse
+  - name: modern health
+    slug: modernhealth
+    ats: greenhouse
+  - name: motional
+    slug: motional
+    ats: greenhouse
+  - name: movable ink
+    slug: movableink
+    ats: greenhouse
+  - name: mozilla
+    slug: mozilla
+    ats: greenhouse
+  - name: mparticle
+    slug: mparticle
+    ats: greenhouse
+  - name: mural
+    slug: mural
+    ats: greenhouse
+  - name: netlify
+    slug: netlify
+    ats: greenhouse
+  - name: new relic
+    slug: newrelic
+    ats: greenhouse
+  - name: nextdoor
+    slug: nextdoor
+    ats: greenhouse
+  - name: niantic
+    slug: niantic
+    ats: greenhouse
+  - name: notion
+    slug: notion
+    ats: greenhouse
+  - name: nuro
+    slug: nuro
+    ats: greenhouse
+  - name: okta
+    slug: okta
+    ats: greenhouse
+  - name: onelogin
+    slug: onelogin
+    ats: greenhouse
+  - name: one medical
+    slug: onemedical
+    ats: greenhouse
+  - name: openai
+    slug: openai
+    ats: greenhouse
+  - name: opendoor
+    slug: opendoor
+    ats: greenhouse
+  - name: oscar
+    slug: oscar
+    ats: greenhouse
+  - name: outschool
+    slug: outschool
+    ats: greenhouse
+  - name: oyster
+    slug: oyster
+    ats: greenhouse
+  - name: pacaso
+    slug: pacaso
+    ats: greenhouse
+  - name: pagerduty
+    slug: pagerduty
+    ats: greenhouse
+  - name: papaya
+    slug: papaya
+    ats: greenhouse
+  - name: patreon
+    slug: patreon
+    ats: greenhouse
+  - name: peloton
+    slug: peloton
+    ats: greenhouse
+  - name: pendo
+    slug: pendo
+    ats: greenhouse
+  - name: planetscale
+    slug: planetscale
+    ats: greenhouse
+  - name: plenty
+    slug: plenty
+    ats: greenhouse
+  - name: poshmark
+    slug: poshmark
+    ats: greenhouse
+  - name: postman
+    slug: postman
+    ats: greenhouse
+  - name: postscript
+    slug: postscript
+    ats: greenhouse
+  - name: prefect
+    slug: prefect
+    ats: greenhouse
+  - name: prisma
+    slug: prisma
+    ats: greenhouse
+  - name: quora
+    slug: quora
+    ats: greenhouse
+  - name: ramp
+    slug: ramp
+    ats: greenhouse
+  - name: redis
+    slug: redis
+    ats: greenhouse
+  - name: render
+    slug: render
+    ats: greenhouse
+  - name: retool
+    slug: retool
+    ats: greenhouse
+  - name: riot games
+    slug: riotgames
+    ats: greenhouse
+  - name: rivian
+    slug: rivian
+    ats: greenhouse
+  - name: root
+    slug: root
+    ats: greenhouse
+  - name: rootly
+    slug: rootly
+    ats: greenhouse
+  - name: runzero
+    slug: runzero
+    ats: greenhouse
+  - name: salesloft
+    slug: salesloft
+    ats: greenhouse
+  - name: samsara
+    slug: samsara
+    ats: greenhouse
+  - name: scale ai
+    slug: scaleai
+    ats: greenhouse
+  - name: segment
+    slug: segment
+    ats: greenhouse
+  - name: sentry
+    slug: sentry
+    ats: greenhouse
+  - name: showpad
+    slug: showpad
+    ats: greenhouse
+  - name: snapchat
+    slug: snapchat
+    ats: greenhouse
+  - name: snyk
+    slug: snyk
+    ats: greenhouse
+  - name: socket
+    slug: socket
+    ats: greenhouse
+  - name: split
+    slug: split
+    ats: greenhouse
+  - name: starburst
+    slug: starburst
+    ats: greenhouse
+  - name: stockx
+    slug: stockx
+    ats: greenhouse
+  - name: strava
+    slug: strava
+    ats: greenhouse
+  - name: substack
+    slug: substack
+    ats: greenhouse
+  - name: sumo
+    slug: sumo
+    ats: greenhouse
+  - name: sumo logic
+    slug: sumologic
+    ats: greenhouse
+  - name: sunnova
+    slug: sunnova
+    ats: greenhouse
+  - name: supabase
+    slug: supabase
+    ats: greenhouse
+  - name: synctera
+    slug: synctera
+    ats: greenhouse
+  - name: take two
+    slug: taketwo
+    ats: greenhouse
+  - name: talkspace
+    slug: talkspace
+    ats: greenhouse
+  - name: the trade desk
+    slug: thetradedesk
+    ats: greenhouse
+  - name: thinkific
+    slug: thinkific
+    ats: greenhouse
+  - name: together ai
+    slug: togetherai
+    ats: greenhouse
+  - name: truffle security
+    slug: trufflesecurity
+    ats: greenhouse
+  - name: twitch
+    slug: twitch
+    ats: greenhouse
+  - name: typeform
+    slug: typeform
+    ats: greenhouse
+  - name: vanta
+    slug: vanta
+    ats: greenhouse
+  - name: vault
+    slug: vault
+    ats: greenhouse
+  - name: venmo
+    slug: venmo
+    ats: greenhouse
+  - name: warbyparker
+    slug: warbyparker
+    ats: greenhouse
+  - name: wayfair
+    slug: wayfair
+    ats: greenhouse
+  - name: waymo
+    slug: waymo
+    ats: greenhouse
+  - name: wayve
+    slug: wayve
+    ats: greenhouse
+  - name: wealthfront
+    slug: wealthfront
+    ats: greenhouse
+  - name: wikimedia
+    slug: wikimedia
+    ats: greenhouse
+  - name: zapier
+    slug: zapier
+    ats: greenhouse
+  - name: zenefits
+    slug: zenefits
+    ats: greenhouse
+  - name: zilliz
+    slug: zilliz
+    ats: greenhouse
+  - name: zoominfo
+    slug: zoominfo
+    ats: greenhouse
+  - name: zynga
+    slug: zynga
+    ats: greenhouse
+  - name: 15five
+    slug: 15five
+    ats: lever
+  - name: 1password
+    slug: 1password
+    ats: lever
+  - name: affirm
+    slug: affirm
+    ats: lever
+  - name: alan
+    slug: alan
+    ats: lever
+  - name: algolia
+    slug: algolia
+    ats: lever
+  - name: amplitude
+    slug: amplitude
+    ats: lever
+  - name: anduril
+    slug: anduril
+    ats: lever
+  - name: anthropic
+    slug: anthropic
+    ats: lever
+  - name: applovin
+    slug: applovin
+    ats: lever
+  - name: atlassian
+    slug: atlassian
+    ats: lever
+  - name: attentive
+    slug: attentive
+    ats: lever
+  - name: auth0
+    slug: auth0
+    ats: lever
+  - name: benchling
+    slug: benchling
+    ats: lever
+  - name: benchsci
+    slug: benchsci
+    ats: lever
+  - name: big health
+    slug: bighealth
+    ats: lever
+  - name: box
+    slug: box
+    ats: lever
+  - name: brilliant
+    slug: brilliant
+    ats: lever
+  - name: calm
+    slug: calm
+    ats: lever
+  - name: checkout
+    slug: checkout
+    ats: lever
+  - name: clari
+    slug: clari
+    ats: lever
+  - name: clearbit
+    slug: clearbit
+    ats: lever
+  - name: coda
+    slug: coda
+    ats: lever
+  - name: cohere
+    slug: cohere
+    ats: lever
+  - name: confluent
+    slug: confluent
+    ats: lever
+  - name: coursera
+    slug: coursera
+    ats: lever
+  - name: covariant
+    slug: covariant
+    ats: lever
+  - name: craft
+    slug: craft
+    ats: lever
+  - name: cruise
+    slug: cruise
+    ats: lever
+  - name: databricks
+    slug: databricks
+    ats: lever
+  - name: duolingo
+    slug: duolingo
+    ats: lever
+  - name: dynatrace
+    slug: dynatrace
+    ats: lever
+  - name: etsy
+    slug: etsy
+    ats: lever
+  - name: figma
+    slug: figma
+    ats: lever
+  - name: finch
+    slug: finch
+    ats: lever
+  - name: formant
+    slug: formant
+    ats: lever
+  - name: form energy
+    slug: formenergy
+    ats: lever
+  - name: gitbook
+    slug: gitbook
+    ats: lever
+  - name: gitlab
+    slug: gitlab
+    ats: lever
+  - name: goat
+    slug: goat
+    ats: lever
+  - name: gong
+    slug: gong
+    ats: lever
+  - name: gopuff
+    slug: gopuff
+    ats: lever
+  - name: grafana
+    slug: grafana
+    ats: lever
+  - name: guild
+    slug: guild
+    ats: lever
+  - name: hadrian
+    slug: hadrian
+    ats: lever
+  - name: headspace
+    slug: headspace
+    ats: lever
+  - name: hellosign
+    slug: hellosign
+    ats: lever
+  - name: highspot
+    slug: highspot
+    ats: lever
+  - name: honeycomb
+    slug: honeycomb
+    ats: lever
+  - name: imbue
+    slug: imbue
+    ats: lever
+  - name: inflection
+    slug: inflection
+    ats: lever
+  - name: juro
+    slug: juro
+    ats: lever
+  - name: klaviyo
+    slug: klaviyo
+    ats: lever
+  - name: labelbox
+    slug: labelbox
+    ats: lever
+  - name: launchdarkly
+    slug: launchdarkly
+    ats: lever
+  - name: lucid
+    slug: lucid
+    ats: lever
+  - name: medium
+    slug: medium
+    ats: lever
+  - name: mirror
+    slug: mirror
+    ats: lever
+  - name: mistral
+    slug: mistral
+    ats: lever
+  - name: motional
+    slug: motional
+    ats: lever
+  - name: netflix
+    slug: netflix
+    ats: lever
+  - name: openai
+    slug: openai
+    ats: lever
+  - name: opendoor
+    slug: opendoor
+    ats: lever
+  - name: osaro
+    slug: osaro
+    ats: lever
+  - name: outreach
+    slug: outreach
+    ats: lever
+  - name: outschool
+    slug: outschool
+    ats: lever
+  - name: pagerduty
+    slug: pagerduty
+    ats: lever
+  - name: people ai
+    slug: people-ai
+    ats: lever
+  - name: plaid
+    slug: plaid
+    ats: lever
+  - name: plangrid
+    slug: plangrid
+    ats: lever
+  - name: qualified
+    slug: qualified
+    ats: lever
+  - name: quora
+    slug: quora
+    ats: lever
+  - name: reddit
+    slug: reddit
+    ats: lever
+  - name: relay
+    slug: relay
+    ats: lever
+  - name: retool
+    slug: retool
+    ats: lever
+  - name: ro
+    slug: ro
+    ats: lever
+  - name: roboflow
+    slug: roboflow
+    ats: lever
+  - name: rockset
+    slug: rockset
+    ats: lever
+  - name: sanctuary
+    slug: sanctuary
+    ats: lever
+  - name: scale ai
+    slug: scaleai
+    ats: lever
+  - name: secureframe
+    slug: secureframe
+    ats: lever
+  - name: shopify
+    slug: shopify
+    ats: lever
+  - name: skillshare
+    slug: skillshare
+    ats: lever
+  - name: spotify
+    slug: spotify
+    ats: lever
+  - name: spring health
+    slug: springhealth
+    ats: lever
+  - name: strapi
+    slug: strapi
+    ats: lever
+  - name: sunnova
+    slug: sunnova
+    ats: lever
+  - name: teachable
+    slug: teachable
+    ats: lever
+  - name: thredup
+    slug: thredup
+    ats: lever
+  - name: twitch
+    slug: twitch
+    ats: lever
+  - name: udemy
+    slug: udemy
+    ats: lever
+  - name: wealthfront
+    slug: wealthfront
+    ats: lever
+  - name: wiz
+    slug: wiz
+    ats: lever
+  - name: workos
+    slug: workos
+    ats: lever
+  - name: yubico
+    slug: yubico
+    ats: lever
+  - name: zendesk
+    slug: zendesk
+    ats: lever
+  - name: zilliz
+    slug: zilliz
+    ats: lever
+  - name: zoox
+    slug: zoox
+    ats: lever
+  - name: 1password
+    slug: 1password
+    ats: ashby
+  - name: acorns
+    slug: acorns
+    ats: ashby
+  - name: airbyte
+    slug: airbyte
+    ats: ashby
+  - name: alan
+    slug: alan
+    ats: ashby
+  - name: ashby
+    slug: ashby
+    ats: ashby
+  - name: benchling
+    slug: benchling
+    ats: ashby
+  - name: betterup
+    slug: betterup
+    ats: ashby
+  - name: brainly
+    slug: brainly
+    ats: ashby
+  - name: chronosphere
+    slug: chronosphere
+    ats: ashby
+  - name: clerk
+    slug: clerk
+    ats: ashby
+  - name: clickup
+    slug: clickup
+    ats: ashby
+  - name: cohere
+    slug: cohere
+    ats: ashby
+  - name: column
+    slug: column
+    ats: ashby
+  - name: confluent
+    slug: confluent
+    ats: ashby
+  - name: deel
+    slug: deel
+    ats: ashby
+  - name: demandbase
+    slug: demandbase
+    ats: ashby
+  - name: deno
+    slug: deno
+    ats: ashby
+  - name: docker
+    slug: docker
+    ats: ashby
+  - name: drata
+    slug: drata
+    ats: ashby
+  - name: elevenlabs
+    slug: elevenlabs
+    ats: ashby
+  - name: finch
+    slug: finch
+    ats: ashby
+  - name: form energy
+    slug: formenergy
+    ats: ashby
+  - name: fullstory
+    slug: fullstory
+    ats: ashby
+  - name: gitbook
+    slug: gitbook
+    ats: ashby
+  - name: gitpod
+    slug: gitpod
+    ats: ashby
+  - name: guild
+    slug: guild
+    ats: ashby
+  - name: handshake
+    slug: handshake
+    ats: ashby
+  - name: helion
+    slug: helion
+    ats: ashby
+  - name: juro
+    slug: juro
+    ats: ashby
+  - name: kin
+    slug: kin
+    ats: ashby
+  - name: langchain
+    slug: langchain
+    ats: ashby
+  - name: lemonade
+    slug: lemonade
+    ats: ashby
+  - name: llamaindex
+    slug: llamaindex
+    ats: ashby
+  - name: mem
+    slug: mem
+    ats: ashby
+  - name: mintlify
+    slug: mintlify
+    ats: ashby
+  - name: modern treasury
+    slug: moderntreasury
+    ats: ashby
+  - name: moov
+    slug: moov
+    ats: ashby
+  - name: mparticle
+    slug: mparticle
+    ats: ashby
+  - name: mural
+    slug: mural
+    ats: ashby
+  - name: orca
+    slug: orca
+    ats: ashby
+  - name: oyster
+    slug: oyster
+    ats: ashby
+  - name: patreon
+    slug: patreon
+    ats: ashby
+  - name: pinecone
+    slug: pinecone
+    ats: ashby
+  - name: poshmark
+    slug: poshmark
+    ats: ashby
+  - name: posthog
+    slug: posthog
+    ats: ashby
+  - name: prefect
+    slug: prefect
+    ats: ashby
+  - name: qualified
+    slug: qualified
+    ats: ashby
+  - name: quora
+    slug: quora
+    ats: ashby
+  - name: railway
+    slug: railway
+    ats: ashby
+  - name: readme
+    slug: readme
+    ats: ashby
+  - name: reddit
+    slug: reddit
+    ats: ashby
+  - name: relay
+    slug: relay
+    ats: ashby
+  - name: render
+    slug: render
+    ats: ashby
+  - name: roboflow
+    slug: roboflow
+    ats: ashby
+  - name: runway
+    slug: runway
+    ats: ashby
+  - name: sanity
+    slug: sanity
+    ats: ashby
+  - name: sentry
+    slug: sentry
+    ats: ashby
+  - name: snowflake
+    slug: snowflake
+    ats: ashby
+  - name: socket
+    slug: socket
+    ats: ashby
+  - name: strava
+    slug: strava
+    ats: ashby
+  - name: stytch
+    slug: stytch
+    ats: ashby
+  - name: substack
+    slug: substack
+    ats: ashby
+  - name: supabase
+    slug: supabase
+    ats: ashby
+  - name: tailwind
+    slug: tailwind
+    ats: ashby
+  - name: unit
+    slug: unit
+    ats: ashby
+  - name: vanta
+    slug: vanta
+    ats: ashby
+  - name: weaviate
+    slug: weaviate
+    ats: ashby
+  - name: workos
+    slug: workos
+    ats: ashby
+  - name: zapier
+    slug: zapier
+    ats: ashby
+  - name: adobe
+    slug: adobe
+    ats: workday
+    tenant: adobe
+    wd_num: 5
+    site: adobe_careers
+  - name: basecamp
+    slug: basecamp
+    ats: workday
+    tenant: basecamp
+    wd_num: 1
+    site: ecmc
+  - name: bigcommerce
+    slug: bigcommerce
+    ats: workday
+    tenant: bigcommerce
+    wd_num: 12
+    site: bigcommerce
+  - name: bloomberg
+    slug: bloomberg
+    ats: workday
+    tenant: bloomberg
+    wd_num: 1
+    site: bloombergindustrygroup_external_career_site
+  - name: boston dynamics
+    slug: bostondynamics
+    ats: workday
+    tenant: bostondynamics
+    wd_num: 1
+    site: boston_dynamics
+  - name: bumble
+    slug: bumble
+    ats: workday
+    tenant: bumble
+    wd_num: 3
+    site: bumble_careers
+  - name: checkout
+    slug: checkout
+    ats: workday
+    tenant: checkout
+    wd_num: 3
+    site: checkoutcareers
+  - name: chess
+    slug: chess
+    ats: workday
+    tenant: chess
+    wd_num: 1
+    site: chess
+  - name: cisco
+    slug: cisco
+    ats: workday
+    tenant: cisco
+    wd_num: 5
+    site: cisco_careers
+  - name: clio
+    slug: clio
+    ats: workday
+    tenant: clio
+    wd_num: 3
+    site: cliocareersite
+  - name: compass
+    slug: compass
+    ats: workday
+    tenant: compass
+    wd_num: 501
+    site: radian_external_career_site
+  - name: crowdstrike
+    slug: crowdstrike
+    ats: workday
+    tenant: crowdstrike
+    wd_num: 5
+    site: crowdstrikecareers
+  - name: ebay
+    slug: ebay
+    ats: workday
+    tenant: ebay
+    wd_num: 5
+    site: tcgplayer_external_career
+  - name: epic games
+    slug: epicgames
+    ats: workday
+    tenant: epicgames
+    wd_num: 5
+    site: epic_design
+  - name: etsy
+    slug: etsy
+    ats: workday
+    tenant: etsy
+    wd_num: 5
+    site: depop_careers
+  - name: google
+    slug: google
+    ats: workday
+    tenant: google
+    wd_num: 5
+    site: gocjobs
+  - name: intel
+    slug: intel
+    ats: workday
+    tenant: intel
+    wd_num: 1
+    site: external
+  - name: netflix
+    slug: netflix
+    ats: workday
+    tenant: netflix
+    wd_num: 1
+    site: netflix
+  - name: nvidia
+    slug: nvidia
+    ats: workday
+    tenant: nvidia
+    wd_num: 5
+    site: nvidiaexternalcareersite
+  - name: ny times
+    slug: nytimes
+    ats: workday
+    tenant: nytimes
+    wd_num: 5
+    site: editorial
+  - name: paypal
+    slug: paypal
+    ats: workday
+    tenant: paypal
+    wd_num: 1
+    site: jobs
+  - name: politico
+    slug: politico
+    ats: workday
+    tenant: politico
+    wd_num: 108
+    site: politico
+  - name: poshmark
+    slug: poshmark
+    ats: workday
+    tenant: poshmark
+    wd_num: 503
+    site: poshmark_careers
+  - name: procore
+    slug: procore
+    ats: workday
+    tenant: procore
+    wd_num: 12
+    site: procore_external_careers
+  - name: qualcomm
+    slug: qualcomm
+    ats: workday
+    tenant: qualcomm
+    wd_num: 5
+    site: external
+  - name: qualys
+    slug: qualys
+    ats: workday
+    tenant: qualys
+    wd_num: 5
+    site: careers
+  - name: redfin
+    slug: redfin
+    ats: workday
+    tenant: redfin
+    wd_num: 1
+    site: redfin_careers
+  - name: remitly
+    slug: remitly
+    ats: workday
+    tenant: remitly
+    wd_num: 5
+    site: remitly_careers
+  - name: salesforce
+    slug: salesforce
+    ats: workday
+    tenant: salesforce
+    wd_num: 12
+    site: external_career_site
+  - name: shipt
+    slug: shipt
+    ats: workday
+    tenant: shipt
+    wd_num: 1
+    site: shipt_external
+  - name: snapchat
+    slug: snapchat
+    ats: workday
+    tenant: snapchat
+    wd_num: 1
+    site: referral19
+  - name: stord
+    slug: stord
+    ats: workday
+    tenant: stord
+    wd_num: 503
+    site: stord_external_career
+  - name: sunrun
+    slug: sunrun
+    ats: workday
+    tenant: sunrun
+    wd_num: 5
+    site: sunrun_careers
+  - name: target
+    slug: target
+    ats: workday
+    tenant: target
+    wd_num: 5
+    site: targetcareers
+  - name: teladoc
+    slug: teladoc
+    ats: workday
+    tenant: teladoc
+    wd_num: 1
+    site: teladochealth_is_hiring
+  - name: the trade desk
+    slug: thetradedesk
+    ats: workday
+    tenant: thetradedesk
+    wd_num: 5
+    site: ttdexternalsite
+  - name: thredup
+    slug: thredup
+    ats: workday
+    tenant: thredup
+    wd_num: 1
+    site: thredup_careers
+  - name: vmware
+    slug: vmware
+    ats: workday
+    tenant: vmware
+    wd_num: 1
+    site: vmware
+  - name: walmart
+    slug: walmart
+    ats: workday
+    tenant: walmart
+    wd_num: 5
+    site: non-workdayinternal
+  - name: workday
+    slug: workday
+    ats: workday
+    tenant: workday
+    wd_num: 5
+    site: workday
+  - name: zendesk
+    slug: zendesk
+    ats: workday
+    tenant: zendesk
+    wd_num: 1
+    site: zendesk
+  - name: zillow
+    slug: zillow
+    ats: workday
+    tenant: zillow
+    wd_num: 5
+    site: streeteasy_external
+  - name: zoom
+    slug: zoom
+    ats: workday
+    tenant: zoom
+    wd_num: 5
+    site: zoom
+
 
 criteria:
   target_roles:
@@ -202,3 +1535,9 @@ criteria:
     - blockchain
     - defense
   sponsorship_required: true
+  max_posting_age_days: 30
+
+# Permanent denylist for the importer. Format: "<ats>:<slug>" per entry.
+# When you delete a company from `companies:` by hand, also add it here so the
+# next `import_companies.py --apply` doesn't re-add it.
+disabled: []

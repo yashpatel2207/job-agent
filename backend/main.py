@@ -2,22 +2,29 @@
 
 Steps:
   0. Backup the DB (local SQLite only)
-  1. Scrape all configured companies
-  2. Dedupe, save new jobs
-  3. Score unscored jobs with Claude
+  1. Archive stale "new" jobs (>30 days untouched)
+  2. Scrape all configured companies
+  3. Dedupe, save new jobs
+  4. Score unscored jobs with Claude
 """
 import os
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Force UTF-8 stdout so unicode in job titles doesn't crash the pipeline on Windows cp1252.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 load_dotenv()
 
-from db.models import Settings, get_session, init_db
+from db.models import Job, Settings, get_session, init_db
 from scraper import scrape_all, filter_new, save_jobs
 from scorer import score_all_unscored
+
+STALE_DAYS = 30
 
 
 def is_paused() -> bool:
@@ -28,6 +35,24 @@ def is_paused() -> bool:
     try:
         row = s.query(Settings).filter(Settings.key == "pipeline_paused").first()
         return bool(row and row.value == "true")
+    finally:
+        s.close()
+
+
+def archive_stale():
+    """Flip jobs that have sat in `new` for >STALE_DAYS to `archived`. Trims the queue
+    without losing history — frontend filters `status=new` by default, so archived
+    rows disappear from the dashboard but stay queryable via `status=all`."""
+    cutoff = datetime.utcnow() - timedelta(days=STALE_DAYS)
+    s = get_session()
+    try:
+        n = s.query(Job).filter(
+            Job.status == "new",
+            Job.scraped_at < cutoff,
+        ).update({Job.status: "archived"}, synchronize_session=False)
+        s.commit()
+        if n:
+            print(f"Archived {n} stale jobs (>{STALE_DAYS}d in 'new')")
     finally:
         s.close()
 
@@ -61,6 +86,8 @@ def main():
         print("\nPipeline is paused. Skipping scheduled run.")
         print("Use 'Run now' from the dashboard to override.")
         return 0
+
+    archive_stale()
 
     print("\n[1/2] Scraping...")
     scraped = scrape_all()
