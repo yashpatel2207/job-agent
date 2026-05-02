@@ -19,6 +19,11 @@ import urllib.request
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
+
+# Load .env (DATABASE_URL etc.) before any db.models import so the engine binds to Postgres,
+# not the empty local SQLite fallback. Looks for .env next to this script.
+load_dotenv(Path(__file__).parent / ".env")
 
 ROOT = Path(__file__).parent
 COMPANIES_YAML = ROOT / "companies.yaml"
