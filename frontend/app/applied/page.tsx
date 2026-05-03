@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { fetchJobs, updateStatus, Job } from "@/lib/api";
 import { MatchBadge } from "@/components/MatchBadge";
+import { lookupCompany, useCompanyMap } from "@/lib/companyDisplay";
 
 export default function AppliedPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const companyMap = useCompanyMap();
 
   useEffect(() => {
     fetchJobs({ status: "applied" })
@@ -72,7 +74,7 @@ export default function AppliedPage() {
                 className="min-w-0 block"
               >
                 <p className="text-[13px] font-semibold text-coral mb-1 truncate">
-                  {j.company}
+                  {lookupCompany(companyMap, j.company).display}
                 </p>
                 <p className="font-semibold text-[17px] leading-tight tracking-snug truncate text-ink group-hover:text-coral transition-colors duration-200">
                   {j.title}

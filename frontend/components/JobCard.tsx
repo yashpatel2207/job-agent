@@ -20,10 +20,14 @@ export function JobCard({
   job,
   index,
   onChange,
+  companyDisplay,
+  companyCareersUrl,
 }: {
   job: Job;
   index?: number;
   onChange?: () => void;
+  companyDisplay?: string;
+  companyCareersUrl?: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [noteCount, setNoteCount] = useState<number | null>(null);
@@ -89,7 +93,18 @@ export function JobCard({
       <div className="flex items-start justify-between gap-6 mb-3">
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-semibold text-blue tracking-snug mb-1.5 truncate">
-            {job.company}
+            {companyCareersUrl ? (
+              <a
+                href={companyCareersUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {companyDisplay ?? job.company}
+              </a>
+            ) : (
+              companyDisplay ?? job.company
+            )}
           </p>
           <h3 className="font-semibold text-[22px] sm:text-[24px] leading-[1.2] tracking-snug text-ink">
             {job.title}

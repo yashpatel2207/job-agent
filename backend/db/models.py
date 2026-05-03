@@ -23,6 +23,7 @@ class Job(Base):
     score = Column(Float)
     score_reasons = Column(JSON)
     red_flags = Column(JSON)
+    role_type = Column(String, index=True)
 
     status = Column(String, default="new", index=True)
     applied_at = Column(DateTime)

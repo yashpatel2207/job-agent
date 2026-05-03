@@ -16,6 +16,7 @@ from pydantic import BaseModel
 import requests
 
 from db.models import Job, Profile, MasterResume, Settings, get_session, init_db
+from scraper import load_config
 
 GITHUB_REPO = os.getenv("GITHUB_REPO", "yashpatel2207/job-agent")
 GITHUB_WORKFLOW_FILE = os.getenv("GITHUB_WORKFLOW_FILE", "daily-scrape.yml")
@@ -253,6 +254,34 @@ def cron_pause(payload: PauseToggle):
     return {"ok": True, "paused": payload.paused}
 
 
+def _derive_careers_url(c: dict) -> str | None:
+    ats = c.get("ats")
+    slug = c.get("slug")
+    if ats == "greenhouse" and slug:
+        return f"https://job-boards.greenhouse.io/{slug}"
+    if ats == "lever" and slug:
+        return f"https://jobs.lever.co/{slug}"
+    if ats == "ashby" and slug:
+        return f"https://jobs.ashbyhq.com/{slug}"
+    if ats == "workday":
+        tenant, wd_num, site = c.get("tenant"), c.get("wd_num"), c.get("site")
+        if tenant and wd_num and site:
+            return f"https://{tenant}.wd{wd_num}.myworkdayjobs.com/{site}"
+    return None
+
+
+@app.get("/api/companies")
+def list_companies():
+    cfg = load_config()
+    return [
+        {
+            "name": c["name"],
+            "careers_url": c.get("careers_url") or _derive_careers_url(c),
+        }
+        for c in cfg.get("companies", [])
+    ]
+
+
 @app.get("/api/stats")
 def stats():
     session = get_session()
@@ -285,6 +314,7 @@ def job_to_dict(job: Job, full: bool = False) -> dict:
         "score": job.score,
         "score_reasons": job.score_reasons or [],
         "red_flags": job.red_flags or [],
+        "role_type": job.role_type,
         "status": job.status,
         "posted_at": job.posted_at.isoformat() if job.posted_at else None,
         "scraped_at": job.scraped_at.isoformat() if job.scraped_at else None,

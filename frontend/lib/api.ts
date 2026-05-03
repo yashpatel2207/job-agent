@@ -10,11 +10,17 @@ export interface Job {
   score: number | null;
   score_reasons: string[];
   red_flags: string[];
+  role_type?: "frontend" | "fullstack" | "other" | null;
   status: string;
   posted_at: string | null;
   scraped_at: string | null;
   jd_text?: string;
   user_notes?: string;
+}
+
+export interface Company {
+  name: string;
+  careers_url: string | null;
 }
 
 export interface Stats {
@@ -43,6 +49,12 @@ export async function fetchJob(id: string): Promise<Job> {
 export async function fetchStats(): Promise<Stats> {
   const res = await fetch(`${API_URL}/api/stats`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch stats");
+  return res.json();
+}
+
+export async function fetchCompanies(): Promise<Company[]> {
+  const res = await fetch(`${API_URL}/api/companies`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch companies");
   return res.json();
 }
 

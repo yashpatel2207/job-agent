@@ -79,16 +79,28 @@ Return a JSON object with this exact shape, no markdown, no preamble:
   "seniority_fit": "below" | "match" | "above",
   "comp_visible": <true if comp is stated in JD, false otherwise>,
   "comp_range": "<string or null>",
-  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear"
+  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear",
+  "role_type": "frontend" | "fullstack" | "other"
 }}
 
 Scoring guidance:
-- 9-10: Dream fit. Senior/staff level, required skills explicit, comp clearly in range, no red flags.
-- 7-8: Strong fit with minor gaps.
-- 5-6: Borderline, meaningful gaps.
-- 0-4: Not worth applying. Wrong level, missing required skills, in exclusion list, or comp clearly below minimum.
 - If the role is in the exclusion list (crypto, web3, etc.), score 0.
-- FULL-STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch. Frontend-only roles are unaffected.
+- FULL-STACK BACKEND STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch.
+- ROLE TYPE: Classify the role as one of:
+    - "frontend" — UI / web client / components / design systems / "Frontend Engineer" / "UI Engineer" / "Web Engineer" with no meaningful backend ownership.
+    - "fullstack" — JD describes ownership of both client and server (Node.js / Next.js API routes / tRPC / NestJS / Express). Use this for any "Full Stack", "Full-Stack", or "front + back" framing.
+    - "other" — slipped through the title filter but isn't really frontend or full-stack.
+- SKILL COVERAGE + ROLE TYPE (graduated): Place the score using BOTH role type and how many of the listed skills the JD explicitly names.
+    Frontend-only roles:
+      - Required skills (JavaScript, TypeScript) named → 8 (Strong fit; meeting the bar is itself strong).
+      - Required + 1-2 preferred (React, Angular, Next.js, design systems, performance, Node.js) → 8.5-9.
+      - Required + most/all preferred → 9-10 (Dream fit).
+    Full-stack JS/TS roles (passed the FULL-STACK BACKEND STACK rule):
+      - Required only → 7.
+      - Required + 1-2 preferred → 7.5.
+      - Required + most/all preferred → 8 (cap — never exceed 8 for full-stack regardless of fit).
+    If required skills are only inferred (not explicitly named): drop one tier.
+    If wrong seniority level or comp clearly below minimum: drop into 5-6 or below.
 - LOCATION: Fully remote US roles are always a location match. Roles in any of the listed metros are a match. If the role is non-US, OR requires onsite/hybrid presence in a US city NOT on the acceptable list (e.g. Minneapolis, Brooklyn Park MN, Detroit, Salt Lake City, Austin if not listed) with no remote option, CAP the score at 3 and add a "location-not-in-list" red flag — strong skills, comp, and seniority do NOT override this cap.
 - SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
 - Federal contractor / defense / clearance-required roles almost always require US persons — treat as "explicit_no" for sponsorship purposes.
@@ -119,18 +131,30 @@ Return a JSON object with a single key "results" whose value is an array of obje
   "seniority_fit": "below" | "match" | "above",
   "comp_visible": <true if comp is stated in JD, false otherwise>,
   "comp_range": "<string or null>",
-  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear"
+  "sponsorship_signal": "explicit_no" | "explicit_yes" | "unclear",
+  "role_type": "frontend" | "fullstack" | "other"
 }}
 
 Return STRICTLY valid JSON, no markdown, no preamble. The "results" array length must match the input length.
 
 Scoring guidance:
-- 9-10: Dream fit. Senior/staff level, required skills explicit, comp clearly in range, no red flags.
-- 7-8: Strong fit with minor gaps.
-- 5-6: Borderline, meaningful gaps.
-- 0-4: Not worth applying. Wrong level, missing required skills, in exclusion list, or comp clearly below minimum.
 - If the role is in the exclusion list (crypto, web3, etc.), score 0.
-- FULL-STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch. Frontend-only roles are unaffected.
+- FULL-STACK BACKEND STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch.
+- ROLE TYPE: Classify the role as one of:
+    - "frontend" — UI / web client / components / design systems / "Frontend Engineer" / "UI Engineer" / "Web Engineer" with no meaningful backend ownership.
+    - "fullstack" — JD describes ownership of both client and server (Node.js / Next.js API routes / tRPC / NestJS / Express). Use this for any "Full Stack", "Full-Stack", or "front + back" framing.
+    - "other" — slipped through the title filter but isn't really frontend or full-stack.
+- SKILL COVERAGE + ROLE TYPE (graduated): Place the score using BOTH role type and how many of the listed skills the JD explicitly names.
+    Frontend-only roles:
+      - Required skills (JavaScript, TypeScript) named → 8 (Strong fit; meeting the bar is itself strong).
+      - Required + 1-2 preferred (React, Angular, Next.js, design systems, performance, Node.js) → 8.5-9.
+      - Required + most/all preferred → 9-10 (Dream fit).
+    Full-stack JS/TS roles (passed the FULL-STACK BACKEND STACK rule):
+      - Required only → 7.
+      - Required + 1-2 preferred → 7.5.
+      - Required + most/all preferred → 8 (cap — never exceed 8 for full-stack regardless of fit).
+    If required skills are only inferred (not explicitly named): drop one tier.
+    If wrong seniority level or comp clearly below minimum: drop into 5-6 or below.
 - LOCATION: Fully remote US roles are always a location match. Roles in any of the listed metros are a match. If the role is non-US, OR requires onsite/hybrid presence in a US city NOT on the acceptable list (e.g. Minneapolis, Brooklyn Park MN, Detroit, Salt Lake City, Austin if not listed) with no remote option, CAP the score at 3 and add a "location-not-in-list" red flag — strong skills, comp, and seniority do NOT override this cap.
 - SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
 - Federal contractor / defense / clearance-required roles almost always require US persons — treat as "explicit_no" for sponsorship purposes.
@@ -276,6 +300,7 @@ def _apply_result(job: Job, result: dict):
     job.score = result["score"]
     job.score_reasons = result.get("reasons", [])
     job.red_flags = result.get("red_flags", [])
+    job.role_type = result.get("role_type")
 
 
 def _score_chunk(chunk: list[Job], criteria: dict) -> list[tuple[Job, dict | Exception]]:

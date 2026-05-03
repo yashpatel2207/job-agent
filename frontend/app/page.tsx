@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { fetchJobs, fetchStats, Job, Stats } from "@/lib/api";
 import { JobCard } from "@/components/JobCard";
 import { StatCard } from "@/components/StatCard";
 import { CronControlPanel } from "@/components/CronControlPanel";
 import { TierNav, TierNavItem } from "@/components/TierNav";
 import { Pagination } from "@/components/Pagination";
+import { lookupCompany, useCompanyMap } from "@/lib/companyDisplay";
 
 type Age = "all" | "7d" | "14d" | "older";
+type RoleType = "all" | "frontend" | "fullstack";
+type AtsFilter = "all" | "no-workday" | "workday-only";
 
 const PAGE_SIZE = 10;
 const TIER_IDS = {
@@ -39,6 +43,9 @@ export default function QueuePage() {
   const [age, setAge] = useState<Age>("7d");
   const [company, setCompany] = useState<string>("all");
   const [query, setQuery] = useState("");
+  const [roleType, setRoleType] = useState<RoleType>("all");
+  const [atsFilter, setAtsFilter] = useState<AtsFilter>("all");
+  const companyMap = useCompanyMap();
 
   const load = async () => {
     setLoading(true);
@@ -76,9 +83,13 @@ export default function QueuePage() {
     const counts = new Map<string, number>();
     for (const j of ageFiltered) counts.set(j.company, (counts.get(j.company) ?? 0) + 1);
     return Array.from(counts.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([name, count]) => ({ name, count }));
-  }, [ageFiltered]);
+      .map(([name, count]) => ({
+        name,
+        display: lookupCompany(companyMap, name).display,
+        count,
+      }))
+      .sort((a, b) => a.display.localeCompare(b.display));
+  }, [ageFiltered, companyMap]);
 
   useEffect(() => {
     if (company !== "all" && !companyOptions.some((c) => c.name === company)) {
@@ -91,9 +102,12 @@ export default function QueuePage() {
     return ageFiltered.filter((j) => {
       if (company !== "all" && j.company !== company) return false;
       if (q && !j.title.toLowerCase().includes(q) && !j.company.toLowerCase().includes(q)) return false;
+      if (roleType !== "all" && j.role_type !== roleType) return false;
+      if (atsFilter === "no-workday" && j.ats === "workday") return false;
+      if (atsFilter === "workday-only" && j.ats !== "workday") return false;
       return true;
     });
-  }, [ageFiltered, company, query]);
+  }, [ageFiltered, company, query, roleType, atsFilter]);
 
   const topTier = useMemo(() => visible.filter((j) => (j.score ?? 0) >= 8.0), [visible]);
   const midTier = useMemo(
@@ -111,7 +125,7 @@ export default function QueuePage() {
     setStrongPage(1);
     setWorthPage(1);
     setLowerPage(1);
-  }, [minScore, age, company, query]);
+  }, [minScore, age, company, query, roleType, atsFilter]);
 
   // Clamp pages if a tier shrinks below the current page
   useEffect(() => {
@@ -162,20 +176,43 @@ export default function QueuePage() {
   };
 
   const filtersActive =
-    age !== "7d" || company !== "all" || query.trim() !== "";
+    age !== "7d" ||
+    company !== "all" ||
+    query.trim() !== "" ||
+    roleType !== "all" ||
+    atsFilter !== "all";
 
   const clearFilters = () => {
     setAge("7d");
     setCompany("all");
     setQuery("");
+    setRoleType("all");
+    setAtsFilter("all");
   };
+
+  const roleLabel: Record<RoleType, string> = {
+    all: "",
+    frontend: ", frontend only",
+    fullstack: ", full-stack",
+  };
+  const atsLabel: Record<AtsFilter, string> = {
+    all: "",
+    "no-workday": ", excluding Workday",
+    "workday-only": ", Workday only",
+  };
+
+  const companyDisplay = company === "all"
+    ? null
+    : lookupCompany(companyMap, company).display;
 
   const subtitle = loading
     ? "Loading today's listings…"
     : `${visible.length} ${visible.length === 1 ? "match" : "matches"}` +
       ` at or above ${minScore.toFixed(1)}, posted ${AGE_LABEL[age]}` +
-      (company !== "all" ? `, at ${company}` : "") +
+      (companyDisplay ? `, at ${companyDisplay}` : "") +
       (query.trim() ? `, matching "${query.trim()}"` : "") +
+      roleLabel[roleType] +
+      atsLabel[atsFilter] +
       ".";
 
   return (
@@ -214,51 +251,26 @@ export default function QueuePage() {
       )}
 
       {/* Filter bar */}
-      <section
-        className="card p-5 sm:p-6 mb-12 reveal"
-        style={{ animationDelay: "0.15s" }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-[1.6fr_auto_auto_1fr] gap-4 md:gap-5 items-end">
-          <FilterCell label="Search">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-mute">
-                <SearchIcon />
-              </span>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Title or company"
-                className="search pl-11"
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-slate hover:text-ink transition-colors"
-                  aria-label="Clear search"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </FilterCell>
-
-          <FilterCell label="Min score">
-            <SelectControl
+      <section className="mb-12 reveal" style={{ animationDelay: "0.15s" }}>
+        <div className="filter-bar">
+          <FilterSearch value={query} onChange={setQuery} />
+          <div className="filter-segments">
+            <FilterSegment
+              label="Min score"
               value={String(minScore)}
+              defaultValue="7"
               onChange={(v) => setMinScore(parseFloat(v))}
               options={[
-                { value: "0", label: "All" },
+                { value: "0", label: "All scores" },
                 { value: "5", label: "5.0+" },
                 { value: "7", label: "7.0+" },
                 { value: "8", label: "8.0+" },
               ]}
             />
-          </FilterCell>
-
-          <FilterCell label="Posted">
-            <SelectControl
+            <FilterSegment
+              label="Posted"
               value={age}
+              defaultValue="7d"
               onChange={(v) => setAge(v as Age)}
               options={[
                 { value: "all", label: "Any time" },
@@ -267,29 +279,48 @@ export default function QueuePage() {
                 { value: "older", label: "Older than 14 days" },
               ]}
             />
-          </FilterCell>
-
-          <FilterCell label={`Company · ${companyOptions.length}`}>
-            <SelectControl
+            <FilterSegment
+              label="Role"
+              value={roleType}
+              defaultValue="all"
+              onChange={(v) => setRoleType(v as RoleType)}
+              options={[
+                { value: "all", label: "All roles" },
+                { value: "frontend", label: "Frontend only" },
+                { value: "fullstack", label: "Full-stack" },
+              ]}
+            />
+            <FilterSegment
+              label="ATS"
+              value={atsFilter}
+              defaultValue="all"
+              onChange={(v) => setAtsFilter(v as AtsFilter)}
+              options={[
+                { value: "all", label: "All sources" },
+                { value: "no-workday", label: "Hide Workday" },
+                { value: "workday-only", label: "Workday only" },
+              ]}
+            />
+            <FilterSegment
+              label="Company"
               value={company}
+              defaultValue="all"
+              align="end"
               onChange={setCompany}
               options={[
                 { value: "all", label: `All companies (${ageFiltered.length})` },
                 ...companyOptions.map((c) => ({
                   value: c.name,
-                  label: `${c.name} (${c.count})`,
+                  label: `${c.display} (${c.count})`,
                 })),
               ]}
             />
-          </FilterCell>
+          </div>
         </div>
         {filtersActive && (
-          <div className="mt-4 pt-4 border-t border-hairline flex justify-end">
-            <button
-              onClick={clearFilters}
-              className="text-[13px] text-blue hover:underline font-medium"
-            >
-              Reset filters
+          <div className="mt-3 flex justify-end pr-2">
+            <button onClick={clearFilters} className="filter-reset">
+              Reset all filters
             </button>
           </div>
         )}
@@ -325,7 +356,14 @@ export default function QueuePage() {
           meta={`${topTier.length} · 8.0+`}
         >
           {topPaged.map((j, i) => (
-            <JobCard key={j.id} job={j} index={i} onChange={load} />
+            <JobCard
+              key={j.id}
+              job={j}
+              index={i}
+              onChange={load}
+              companyDisplay={lookupCompany(companyMap, j.company).display}
+              companyCareersUrl={lookupCompany(companyMap, j.company).careersUrl}
+            />
           ))}
           <Pagination
             page={strongPage}
@@ -345,7 +383,14 @@ export default function QueuePage() {
           meta={`${midTier.length} · 7.0 – 7.9`}
         >
           {midPaged.map((j, i) => (
-            <JobCard key={j.id} job={j} index={i} onChange={load} />
+            <JobCard
+              key={j.id}
+              job={j}
+              index={i}
+              onChange={load}
+              companyDisplay={lookupCompany(companyMap, j.company).display}
+              companyCareersUrl={lookupCompany(companyMap, j.company).careersUrl}
+            />
           ))}
           <Pagination
             page={worthPage}
@@ -365,7 +410,14 @@ export default function QueuePage() {
           meta={`${lowTier.length}`}
         >
           {lowPaged.map((j, i) => (
-            <JobCard key={j.id} job={j} index={i} onChange={load} />
+            <JobCard
+              key={j.id}
+              job={j}
+              index={i}
+              onChange={load}
+              companyDisplay={lookupCompany(companyMap, j.company).display}
+              companyCareersUrl={lookupCompany(companyMap, j.company).careersUrl}
+            />
           ))}
           <Pagination
             page={lowerPage}
@@ -380,40 +432,215 @@ export default function QueuePage() {
   );
 }
 
-function FilterCell({ label, children }: { label: string; children: React.ReactNode }) {
+function FilterSearch({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
-    <div className="flex flex-col gap-2 min-w-0">
-      <span className="label">{label}</span>
-      {children}
+    <div className="filter-search">
+      <span className="filter-search-icon" aria-hidden="true">
+        <SearchIcon size={16} />
+      </span>
+      <input
+        type="search"
+        className="filter-search-input"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search title or company"
+        aria-label="Search"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="filter-search-clear"
+          aria-label="Clear search"
+        >
+          Clear
+        </button>
+      )}
     </div>
   );
 }
 
-function SelectControl({
+function FilterSegment({
+  label,
   value,
+  defaultValue,
   onChange,
   options,
+  align = "start",
 }: {
+  label: string;
   value: string;
+  defaultValue: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  align?: "start" | "end";
 }) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [coords, setCoords] = useState<{ top: number; left?: number; right?: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const active = value !== defaultValue;
+  const current = options.find((o) => o.value === value);
+  const display = current?.label ?? "";
+
+  // Position the portal'd popover under the trigger
+  useEffect(() => {
+    if (!open) {
+      setCoords(null);
+      return;
+    }
+    const r = buttonRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const top = r.bottom + 6;
+    if (align === "end") {
+      setCoords({ top, right: window.innerWidth - r.right });
+    } else {
+      setCoords({ top, left: r.left });
+    }
+  }, [open, align]);
+
+  // Click outside, scroll outside, and keyboard handlers
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (buttonRef.current?.contains(t)) return;
+      if (listRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const onScroll = (e: Event) => {
+      // Allow scrolling inside the popover (long Company list)
+      if (listRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        buttonRef.current?.focus();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIndex((i) => Math.min(options.length - 1, i + 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIndex((i) => Math.max(0, i - 1));
+      } else if (e.key === "Enter" && activeIndex >= 0) {
+        e.preventDefault();
+        onChange(options[activeIndex].value);
+        setOpen(false);
+        buttonRef.current?.focus();
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setActiveIndex(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setActiveIndex(options.length - 1);
+      }
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("touchstart", onPointer);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", () => setOpen(false));
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("touchstart", onPointer);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [open, activeIndex, options, onChange]);
+
+  // Initialize active index to current selection when opening
+  useEffect(() => {
+    if (open) {
+      const idx = options.findIndex((o) => o.value === value);
+      setActiveIndex(idx >= 0 ? idx : 0);
+    }
+  }, [open, options, value]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (!open || activeIndex < 0 || !listRef.current) return;
+    const el = listRef.current.children[activeIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: "nearest" });
+  }, [open, activeIndex]);
+
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="select w-full"
+    <div className="filter-segment-wrap">
+      <button
+        ref={buttonRef}
+        type="button"
+        className="filter-segment"
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (!open && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`${label}: ${display}`}
+        data-open={open || undefined}
       >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate">
-        <ChevronIcon />
-      </span>
+        {active && <span className="filter-segment-dot" aria-hidden="true" />}
+        <span className="filter-segment-label">{label}</span>
+        <span className="filter-segment-value">{display}</span>
+        <span className="filter-segment-chevron" aria-hidden="true">
+          <ChevronIcon />
+        </span>
+      </button>
+      {open && coords && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={listRef}
+            className="filter-popover"
+            role="listbox"
+            aria-label={label}
+            style={{
+              top: coords.top,
+              ...(coords.left !== undefined ? { left: coords.left } : {}),
+              ...(coords.right !== undefined ? { right: coords.right } : {}),
+            }}
+          >
+            {options.length === 0 ? (
+              <div className="filter-popover-empty">No options</div>
+            ) : (
+              options.map((o, i) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="option"
+                  aria-selected={value === o.value}
+                  data-active={i === activeIndex || undefined}
+                  className="filter-popover-item"
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                    buttonRef.current?.focus();
+                  }}
+                >
+                  <span className="truncate">{o.label}</span>
+                  {value === o.value && (
+                    <span className="filter-popover-item-check" aria-hidden="true">
+                      <CheckIcon />
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -444,9 +671,9 @@ function Section({
   );
 }
 
-function SearchIcon() {
+function SearchIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
       <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
@@ -457,6 +684,14 @@ function ChevronIcon() {
   return (
     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
