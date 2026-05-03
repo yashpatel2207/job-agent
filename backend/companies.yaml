@@ -145,9 +145,6 @@ companies:
   - name: agility robotics
     slug: agilityrobotics
     ats: greenhouse
-  - name: airbyte
-    slug: airbyte
-    ats: greenhouse
   - name: airtable
     slug: airtable
     ats: greenhouse
@@ -171,9 +168,6 @@ companies:
     ats: greenhouse
   - name: axios
     slug: axios
-    ats: greenhouse
-  - name: benchling
-    slug: benchling
     ats: greenhouse
   - name: betterment
     slug: betterment
@@ -201,9 +195,6 @@ companies:
     ats: greenhouse
   - name: clickhouse
     slug: clickhouse
-    ats: greenhouse
-  - name: clickup
-    slug: clickup
     ats: greenhouse
   - name: constant contact
     slug: constantcontact
@@ -246,9 +237,6 @@ companies:
     ats: greenhouse
   - name: forbes
     slug: forbes
-    ats: greenhouse
-  - name: fullstory
-    slug: fullstory
     ats: greenhouse
   - name: gitlab
     slug: gitlab
@@ -316,9 +304,6 @@ companies:
   - name: mozilla
     slug: mozilla
     ats: greenhouse
-  - name: mural
-    slug: mural
-    ats: greenhouse
   - name: new relic
     slug: newrelic
     ats: greenhouse
@@ -340,9 +325,6 @@ companies:
   - name: outschool
     slug: outschool
     ats: greenhouse
-  - name: patreon
-    slug: patreon
-    ats: greenhouse
   - name: peloton
     slug: peloton
     ats: greenhouse
@@ -354,9 +336,6 @@ companies:
     ats: greenhouse
   - name: postman
     slug: postman
-    ats: greenhouse
-  - name: render
-    slug: render
     ats: greenhouse
   - name: riot games
     slug: riotgames
@@ -370,14 +349,8 @@ companies:
   - name: scale ai
     slug: scaleai
     ats: greenhouse
-  - name: sentry
-    slug: sentry
-    ats: greenhouse
   - name: showpad
     slug: showpad
-    ats: greenhouse
-  - name: snapchat
-    slug: snapchat
     ats: greenhouse
   - name: starburst
     slug: starburst
@@ -385,17 +358,8 @@ companies:
   - name: stockx
     slug: stockx
     ats: greenhouse
-  - name: strava
-    slug: strava
-    ats: greenhouse
-  - name: substack
-    slug: substack
-    ats: greenhouse
   - name: sumo logic
     slug: sumologic
-    ats: greenhouse
-  - name: supabase
-    slug: supabase
     ats: greenhouse
   - name: take two
     slug: taketwo
@@ -409,9 +373,6 @@ companies:
   - name: twitch
     slug: twitch
     ats: greenhouse
-  - name: vanta
-    slug: vanta
-    ats: greenhouse
   - name: waymo
     slug: waymo
     ats: greenhouse
@@ -421,68 +382,14 @@ companies:
   - name: wikimedia
     slug: wikimedia
     ats: greenhouse
-  - name: zapier
-    slug: zapier
-    ats: greenhouse
   - name: zoominfo
     slug: zoominfo
     ats: greenhouse
-  - name: 1password
-    slug: 1password
-    ats: lever
-  - name: alan
-    slug: alan
-    ats: lever
-  - name: algolia
-    slug: algolia
-    ats: lever
-  - name: amplitude
-    slug: amplitude
-    ats: lever
-  - name: applovin
-    slug: applovin
-    ats: lever
-  - name: benchling
-    slug: benchling
-    ats: lever
-  - name: calm
-    slug: calm
-    ats: lever
   - name: clari
     slug: clari
     ats: lever
-  - name: cohere
-    slug: cohere
-    ats: lever
-  - name: confluent
-    slug: confluent
-    ats: lever
-  - name: duolingo
-    slug: duolingo
-    ats: lever
-  - name: etsy
-    slug: etsy
-    ats: lever
   - name: finch
     slug: finch
-    ats: lever
-  - name: form energy
-    slug: formenergy
-    ats: lever
-  - name: gitlab
-    slug: gitlab
-    ats: lever
-  - name: guild
-    slug: guild
-    ats: lever
-  - name: honeycomb
-    slug: honeycomb
-    ats: lever
-  - name: klaviyo
-    slug: klaviyo
-    ats: lever
-  - name: launchdarkly
-    slug: launchdarkly
     ats: lever
   - name: medium
     slug: medium
@@ -490,35 +397,17 @@ companies:
   - name: mistral
     slug: mistral
     ats: lever
-  - name: motional
-    slug: motional
-    ats: lever
-  - name: opendoor
-    slug: opendoor
-    ats: lever
   - name: outreach
     slug: outreach
-    ats: lever
-  - name: outschool
-    slug: outschool
     ats: lever
   - name: relay
     slug: relay
     ats: lever
-  - name: scale ai
-    slug: scaleai
-    ats: lever
   - name: spotify
     slug: spotify
     ats: lever
-  - name: twitch
-    slug: twitch
-    ats: lever
   - name: workos
     slug: workos
-    ats: lever
-  - name: zendesk
-    slug: zendesk
     ats: lever
   - name: zoox
     slug: zoox
@@ -1086,3 +975,40 @@ disabled:
   - workday:thredup
   - workday:vmware
   - workday:zillow
+  - greenhouse:airbyte
+  - greenhouse:benchling
+  - greenhouse:clickup
+  - greenhouse:fullstory
+  - greenhouse:mural
+  - greenhouse:patreon
+  - greenhouse:render
+  - greenhouse:sentry
+  - greenhouse:snapchat
+  - greenhouse:strava
+  - greenhouse:substack
+  - greenhouse:supabase
+  - greenhouse:vanta
+  - greenhouse:zapier
+  - lever:1password
+  - lever:alan
+  - lever:algolia
+  - lever:amplitude
+  - lever:applovin
+  - lever:benchling
+  - lever:calm
+  - lever:cohere
+  - lever:confluent
+  - lever:duolingo
+  - lever:etsy
+  - lever:formenergy
+  - lever:gitlab
+  - lever:guild
+  - lever:honeycomb
+  - lever:klaviyo
+  - lever:launchdarkly
+  - lever:motional
+  - lever:opendoor
+  - lever:outschool
+  - lever:scaleai
+  - lever:twitch
+  - lever:zendesk
