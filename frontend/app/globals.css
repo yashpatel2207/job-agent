@@ -469,23 +469,119 @@
     transform: rotate(180deg);
   }
 
+  /* Standalone pill variant — used when a single segment lives on its own,
+     not joined into a multi-segment .filter-bar. Self-contained surface. */
+  .filter-segment--pill {
+    flex: 0 0 auto;
+    height: 46px;
+    padding: 0 18px;
+    gap: 12px;
+    background: hsl(var(--paper));
+    border: 1px solid hsl(var(--hairline) / 0.55);
+    border-radius: 980px;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 8px 28px -14px rgb(0 0 0 / 0.10);
+    transition:
+      background 0.15s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+  .filter-segment--pill:hover,
+  .filter-segment--pill[data-open="true"] {
+    background: hsl(var(--paper));
+    border-color: hsl(var(--hairline));
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.05),
+      0 14px 36px -14px rgb(0 0 0 / 0.14);
+  }
+  .filter-segment--pill:focus-visible {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.05),
+      0 14px 36px -14px rgb(0 0 0 / 0.14),
+      inset 0 0 0 2px hsl(var(--blue) / 0.32);
+  }
+
   /* Popover menu — rendered via portal at document.body, position set inline */
   .filter-popover {
     position: fixed;
     z-index: 60;
-    min-width: 220px;
-    max-width: 360px;
-    max-height: 360px;
-    overflow-y: auto;
+    min-width: 240px;
+    max-width: 320px;
     background: hsl(var(--paper));
     border: 1px solid hsl(var(--hairline));
     border-radius: 14px;
-    padding: 6px;
     box-shadow:
       0 4px 12px rgb(0 0 0 / 0.06),
       0 24px 48px -16px rgb(0 0 0 / 0.18);
     transform-origin: top center;
     animation: filter-popover-in 0.16s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* let inner list area handle scroll */
+  }
+  .filter-popover-list {
+    padding: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .filter-popover--no-search .filter-popover-list {
+    max-height: 360px;
+  }
+
+  /* Search field at the top of a searchable popover */
+  .filter-popover-search {
+    padding: 10px 10px 0;
+  }
+  .filter-popover-search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .filter-popover-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(var(--mute));
+    pointer-events: none;
+    transition: color 0.15s ease;
+    line-height: 0;
+  }
+  .filter-popover-search-field:focus-within .filter-popover-search-icon {
+    color: hsl(var(--ink));
+  }
+  .filter-popover-search-input {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: 0 12px 0 32px;
+    background: hsl(var(--snow-2));
+    border: 1px solid transparent;
+    border-radius: 9px;
+    outline: none;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--ink));
+    letter-spacing: -0.005em;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .filter-popover-search-input::placeholder {
+    color: hsl(var(--mute));
+  }
+  .filter-popover-search-input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+  .filter-popover-search-input:focus {
+    background: hsl(var(--paper));
+    border-color: hsl(var(--blue) / 0.40);
+  }
+  .filter-popover-search-divider {
+    height: 1px;
+    margin: 8px 6px 0;
+    background: hsl(var(--hairline) / 0.65);
   }
   @keyframes filter-popover-in {
     from { opacity: 0; transform: translateY(-4px) scale(0.97); }

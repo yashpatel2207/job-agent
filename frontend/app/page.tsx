@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useMemo, useState } from "react";
 import { fetchJobs, fetchStats, Job, Stats } from "@/lib/api";
 import { JobCard } from "@/components/JobCard";
 import { StatCard } from "@/components/StatCard";
 import { CronControlPanel } from "@/components/CronControlPanel";
 import { TierNav, TierNavItem } from "@/components/TierNav";
 import { Pagination } from "@/components/Pagination";
+import { FilterSegment } from "@/components/FilterSegment";
 import { lookupCompany, useCompanyMap } from "@/lib/companyDisplay";
 
 type Age = "all" | "since-yesterday" | "7d" | "14d" | "older";
@@ -315,6 +315,7 @@ export default function QueuePage() {
               value={company}
               defaultValue="all"
               align="end"
+              searchable
               onChange={setCompany}
               options={[
                 { value: "all", label: `All companies (${ageFiltered.length})` },
@@ -475,185 +476,6 @@ function FilterSearch({
   );
 }
 
-function FilterSegment({
-  label,
-  value,
-  defaultValue,
-  onChange,
-  options,
-  align = "start",
-}: {
-  label: string;
-  value: string;
-  defaultValue: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-  align?: "start" | "end";
-}) {
-  const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const [coords, setCoords] = useState<{ top: number; left?: number; right?: number } | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const active = value !== defaultValue;
-  const current = options.find((o) => o.value === value);
-  const display = current?.label ?? "";
-
-  // Position the portal'd popover under the trigger
-  useEffect(() => {
-    if (!open) {
-      setCoords(null);
-      return;
-    }
-    const r = buttonRef.current?.getBoundingClientRect();
-    if (!r) return;
-    const top = r.bottom + 6;
-    if (align === "end") {
-      setCoords({ top, right: window.innerWidth - r.right });
-    } else {
-      setCoords({ top, left: r.left });
-    }
-  }, [open, align]);
-
-  // Click outside, scroll outside, and keyboard handlers
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (e: MouseEvent | TouchEvent) => {
-      const t = e.target as Node;
-      if (buttonRef.current?.contains(t)) return;
-      if (listRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    const onScroll = (e: Event) => {
-      // Allow scrolling inside the popover (long Company list)
-      if (listRef.current?.contains(e.target as Node)) return;
-      setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
-        buttonRef.current?.focus();
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setActiveIndex((i) => Math.min(options.length - 1, i + 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setActiveIndex((i) => Math.max(0, i - 1));
-      } else if (e.key === "Enter" && activeIndex >= 0) {
-        e.preventDefault();
-        onChange(options[activeIndex].value);
-        setOpen(false);
-        buttonRef.current?.focus();
-      } else if (e.key === "Home") {
-        e.preventDefault();
-        setActiveIndex(0);
-      } else if (e.key === "End") {
-        e.preventDefault();
-        setActiveIndex(options.length - 1);
-      }
-    };
-    document.addEventListener("mousedown", onPointer);
-    document.addEventListener("touchstart", onPointer);
-    document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", () => setOpen(false));
-    return () => {
-      document.removeEventListener("mousedown", onPointer);
-      document.removeEventListener("touchstart", onPointer);
-      document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", onScroll, true);
-    };
-  }, [open, activeIndex, options, onChange]);
-
-  // Initialize active index to current selection when opening
-  useEffect(() => {
-    if (open) {
-      const idx = options.findIndex((o) => o.value === value);
-      setActiveIndex(idx >= 0 ? idx : 0);
-    }
-  }, [open, options, value]);
-
-  // Scroll active item into view
-  useEffect(() => {
-    if (!open || activeIndex < 0 || !listRef.current) return;
-    const el = listRef.current.children[activeIndex] as HTMLElement | undefined;
-    el?.scrollIntoView({ block: "nearest" });
-  }, [open, activeIndex]);
-
-  return (
-    <div className="filter-segment-wrap">
-      <button
-        ref={buttonRef}
-        type="button"
-        className="filter-segment"
-        onClick={() => setOpen((o) => !o)}
-        onKeyDown={(e) => {
-          if (!open && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")) {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={`${label}: ${display}`}
-        data-open={open || undefined}
-      >
-        {active && <span className="filter-segment-dot" aria-hidden="true" />}
-        <span className="filter-segment-label">{label}</span>
-        <span className="filter-segment-value">{display}</span>
-        <span className="filter-segment-chevron" aria-hidden="true">
-          <ChevronIcon />
-        </span>
-      </button>
-      {open && coords && typeof document !== "undefined" &&
-        createPortal(
-          <div
-            ref={listRef}
-            className="filter-popover"
-            role="listbox"
-            aria-label={label}
-            style={{
-              top: coords.top,
-              ...(coords.left !== undefined ? { left: coords.left } : {}),
-              ...(coords.right !== undefined ? { right: coords.right } : {}),
-            }}
-          >
-            {options.length === 0 ? (
-              <div className="filter-popover-empty">No options</div>
-            ) : (
-              options.map((o, i) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  role="option"
-                  aria-selected={value === o.value}
-                  data-active={i === activeIndex || undefined}
-                  className="filter-popover-item"
-                  onMouseEnter={() => setActiveIndex(i)}
-                  onClick={() => {
-                    onChange(o.value);
-                    setOpen(false);
-                    buttonRef.current?.focus();
-                  }}
-                >
-                  <span className="truncate">{o.label}</span>
-                  {value === o.value && (
-                    <span className="filter-popover-item-check" aria-hidden="true">
-                      <CheckIcon />
-                    </span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>,
-          document.body,
-        )}
-    </div>
-  );
-}
-
 function Section({
   id,
   title,
@@ -689,18 +511,3 @@ function SearchIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-function ChevronIcon() {
-  return (
-    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
