@@ -32,6 +32,25 @@ CLEARANCE_RE = re.compile(
     re.I,
 )
 
+# Used by the prescreen so we don't hard-drop frontend roles whose JD says
+# "React" / "modern JS frameworks" but never literally writes "JavaScript".
+# The LLM rubric still penalizes scores when the canonical skill names are
+# absent — this just lets the role reach the LLM.
+JS_EVIDENCE_RE = re.compile(
+    r"\b("
+    r"javascript|typescript|js|ts|"
+    r"react(?:\.?js)?|vue(?:\.?js)?|angular|next\.?js|nuxt|svelte|"
+    r"solid(?:js)?|remix|ember|astro|qwik|preact|"
+    r"node(?:\.?js)?|"
+    r"web\s+frontend|frontend\s+framework|js\s+framework|"
+    r"client[-\s]side|single[-\s]page\s+app|spa\b|"
+    r"html5?|css3?|tailwind|sass|scss|"
+    r"webpack|vite|rollup|esbuild|"
+    r"redux|zustand|jotai|tanstack|graphql|apollo"
+    r")\b",
+    re.I,
+)
+
 NON_US_LOCATION_RE = re.compile(
     r"\b(london|manchester|edinburgh|dublin|berlin|munich|hamburg|amsterdam|"
     r"paris|lyon|madrid|barcelona|milan|rome|warsaw|prague|stockholm|"
@@ -91,15 +110,16 @@ Scoring guidance:
     - "fullstack" — JD describes ownership of both client and server (Node.js / Next.js API routes / tRPC / NestJS / Express). Use this for any "Full Stack", "Full-Stack", or "front + back" framing.
     - "other" — slipped through the title filter but isn't really frontend or full-stack.
 - SKILL COVERAGE + ROLE TYPE (graduated): Place the score using BOTH role type and how many of the listed skills the JD explicitly names.
+    A JD that names a JS/TS framework (React, Vue, Angular, Next.js, Nuxt, Svelte, Solid, Remix, Ember, Astro, Qwik, Preact, Node.js) counts as "Required skills named" even when the words "JavaScript" or "TypeScript" never appear — these frameworks are JS/TS by definition.
     Frontend-only roles:
-      - Required skills (JavaScript, TypeScript) named → 8 (Strong fit; meeting the bar is itself strong).
+      - Required skills (JavaScript, TypeScript, OR a JS/TS framework named above) → 8 (Strong fit; meeting the bar is itself strong).
       - Required + 1-2 preferred (React, Angular, Next.js, design systems, performance, Node.js) → 8.5-9.
       - Required + most/all preferred → 9-10 (Dream fit).
     Full-stack JS/TS roles (passed the FULL-STACK BACKEND STACK rule):
       - Required only → 7.
       - Required + 1-2 preferred → 7.5.
       - Required + most/all preferred → 8 (cap — never exceed 8 for full-stack regardless of fit).
-    If required skills are only inferred (not explicitly named): drop one tier.
+    If the JD only vaguely gestures at JS (e.g. "modern web technologies" with no specific framework or language named): drop one tier.
     If wrong seniority level or comp clearly below minimum: drop into 5-6 or below.
 - LOCATION: Fully remote US roles are always a location match. Roles in any of the listed metros are a match. If the role is non-US, OR requires onsite/hybrid presence in a US city NOT on the acceptable list (e.g. Minneapolis, Brooklyn Park MN, Detroit, Salt Lake City, Austin if not listed) with no remote option, CAP the score at 3 and add a "location-not-in-list" red flag — strong skills, comp, and seniority do NOT override this cap.
 - SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
@@ -145,15 +165,16 @@ Scoring guidance:
     - "fullstack" — JD describes ownership of both client and server (Node.js / Next.js API routes / tRPC / NestJS / Express). Use this for any "Full Stack", "Full-Stack", or "front + back" framing.
     - "other" — slipped through the title filter but isn't really frontend or full-stack.
 - SKILL COVERAGE + ROLE TYPE (graduated): Place the score using BOTH role type and how many of the listed skills the JD explicitly names.
+    A JD that names a JS/TS framework (React, Vue, Angular, Next.js, Nuxt, Svelte, Solid, Remix, Ember, Astro, Qwik, Preact, Node.js) counts as "Required skills named" even when the words "JavaScript" or "TypeScript" never appear — these frameworks are JS/TS by definition.
     Frontend-only roles:
-      - Required skills (JavaScript, TypeScript) named → 8 (Strong fit; meeting the bar is itself strong).
+      - Required skills (JavaScript, TypeScript, OR a JS/TS framework named above) → 8 (Strong fit; meeting the bar is itself strong).
       - Required + 1-2 preferred (React, Angular, Next.js, design systems, performance, Node.js) → 8.5-9.
       - Required + most/all preferred → 9-10 (Dream fit).
     Full-stack JS/TS roles (passed the FULL-STACK BACKEND STACK rule):
       - Required only → 7.
       - Required + 1-2 preferred → 7.5.
       - Required + most/all preferred → 8 (cap — never exceed 8 for full-stack regardless of fit).
-    If required skills are only inferred (not explicitly named): drop one tier.
+    If the JD only vaguely gestures at JS (e.g. "modern web technologies" with no specific framework or language named): drop one tier.
     If wrong seniority level or comp clearly below minimum: drop into 5-6 or below.
 - LOCATION: Fully remote US roles are always a location match. Roles in any of the listed metros are a match. If the role is non-US, OR requires onsite/hybrid presence in a US city NOT on the acceptable list (e.g. Minneapolis, Brooklyn Park MN, Detroit, Salt Lake City, Austin if not listed) with no remote option, CAP the score at 3 and add a "location-not-in-list" red flag — strong skills, comp, and seniority do NOT override this cap.
 - SPONSORSHIP: If candidate needs sponsorship AND the JD explicitly states "no sponsorship", "must be authorized to work without sponsorship", "no visa transfers", or similar — set sponsorship_signal to "explicit_no" and CAP the score at 3 with a red flag. If the JD is silent on sponsorship, set "unclear" and do not penalize. If the JD explicitly welcomes sponsorship or mentions H1B transfers, set "explicit_yes" and add a small bonus.
@@ -193,11 +214,8 @@ def prescreen(job: Job, criteria: dict) -> dict | None:
         if not has_remote and not has_us_match and NON_US_LOCATION_RE.search(loc_low):
             return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-location"]}
 
-    required = [s.strip().lower() for s in criteria.get("required_skills", []) if s.strip()]
-    if required and jd:
-        jd_low = jd.lower()
-        if not any(re.search(r"\b" + re.escape(s) + r"\b", jd_low) for s in required):
-            return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-no-skill-match"]}
+    if jd and not JS_EVIDENCE_RE.search(jd):
+        return {"score": 0.0, "reasons": [], "red_flags": ["prescreen-no-skill-match"]}
 
     return None
 

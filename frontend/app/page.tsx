@@ -10,7 +10,7 @@ import { TierNav, TierNavItem } from "@/components/TierNav";
 import { Pagination } from "@/components/Pagination";
 import { lookupCompany, useCompanyMap } from "@/lib/companyDisplay";
 
-type Age = "all" | "7d" | "14d" | "older";
+type Age = "all" | "since-yesterday" | "7d" | "14d" | "older";
 type RoleType = "all" | "frontend" | "fullstack";
 type AtsFilter = "all" | "no-workday" | "workday-only";
 
@@ -30,6 +30,7 @@ function scrollToSection(id: string) {
 
 const AGE_LABEL: Record<Age, string> = {
   all: "any time",
+  "since-yesterday": "since yesterday",
   "7d": "the last 7 days",
   "14d": "the last 14 days",
   older: "more than 14 days ago",
@@ -72,7 +73,14 @@ export default function QueuePage() {
     if (age === "all") return true;
     const iso = j.posted_at || j.scraped_at;
     if (!iso) return false;
-    const days = (Date.now() - new Date(iso).getTime()) / 86400000;
+    const t = new Date(iso).getTime();
+    if (age === "since-yesterday") {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - 1);
+      return t >= start.getTime();
+    }
+    const days = (Date.now() - t) / 86400000;
     if (age === "7d") return days <= 7;
     if (age === "14d") return days <= 14;
     return days > 14;
@@ -274,6 +282,7 @@ export default function QueuePage() {
               onChange={(v) => setAge(v as Age)}
               options={[
                 { value: "all", label: "Any time" },
+                { value: "since-yesterday", label: "Since yesterday" },
                 { value: "7d", label: "Last 7 days" },
                 { value: "14d", label: "Last 14 days" },
                 { value: "older", label: "Older than 14 days" },

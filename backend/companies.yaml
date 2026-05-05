@@ -698,6 +698,247 @@ companies:
     wd_num: 5
     site: zoom
 
+  # --- 2026-05 expansion: frontend-heavy companies, slug-verified live ---
+  # Greenhouse
+  - name: webflow
+    slug: webflow
+    ats: greenhouse
+  - name: carta
+    slug: carta
+    ats: greenhouse
+  - name: sigma computing
+    slug: sigmacomputing
+    ats: greenhouse
+  - name: pendo
+    slug: pendo
+    ats: greenhouse
+  - name: ziprecruiter
+    slug: ziprecruiter
+    ats: greenhouse
+  - name: assemblyai
+    slug: assemblyai
+    ats: greenhouse
+  - name: postscript
+    slug: postscript
+    ats: greenhouse
+  - name: snorkel ai
+    slug: snorkelai
+    ats: greenhouse
+  - name: knock
+    slug: knock
+    ats: greenhouse
+  - name: cribl
+    slug: cribl
+    ats: greenhouse
+  - name: brave
+    slug: brave
+    ats: greenhouse
+  - name: smartrent
+    slug: smartrent
+    ats: greenhouse
+  - name: khan academy
+    slug: khanacademy
+    ats: greenhouse
+  - name: cresta
+    slug: cresta
+    ats: greenhouse
+  - name: liquibase
+    slug: liquibase
+    ats: greenhouse
+  - name: heygen
+    slug: heygen
+    ats: greenhouse
+  - name: stitch fix
+    slug: stitchfix
+    ats: greenhouse
+  - name: verkada
+    slug: verkada
+    ats: greenhouse
+  - name: whop
+    slug: whop
+    ats: greenhouse
+  - name: glean
+    slug: gleanwork
+    ats: greenhouse
+  - name: pulumi
+    slug: pulumicorporation
+    ats: greenhouse
+  - name: wiz
+    slug: wizinc
+    ats: greenhouse
+  - name: buildkite
+    slug: buildkite
+    ats: greenhouse
+  - name: coursera
+    slug: coursera
+    ats: greenhouse
+  - name: five9
+    slug: five9
+    ats: greenhouse
+  - name: grow therapy
+    slug: growtherapy
+    ats: greenhouse
+  - name: imply
+    slug: imply
+    ats: greenhouse
+  - name: maintainx
+    slug: maintainx
+    ats: greenhouse
+  - name: material bank
+    slug: materialbank
+    ats: greenhouse
+  - name: metronome
+    slug: metronome
+    ats: greenhouse
+  - name: movable ink
+    slug: movableink
+    ats: greenhouse
+  - name: recharge
+    slug: recharge
+    ats: greenhouse
+  - name: treasury prime
+    slug: treasuryprime
+    ats: greenhouse
+  - name: xai
+    slug: xai
+    ats: greenhouse
+
+  # Ashby
+  - name: decagon
+    slug: decagon
+    ats: ashby
+  - name: betterup
+    slug: betterup
+    ats: ashby
+  - name: persona
+    slug: persona
+    ats: ashby
+  - name: quora
+    slug: quora
+    ats: ashby
+  - name: lambda labs
+    slug: lambda
+    ats: ashby
+  - name: suno
+    slug: suno
+    ats: ashby
+  - name: synthesia
+    slug: synthesia
+    ats: ashby
+  - name: stytch
+    slug: stytch
+    ats: ashby
+  - name: kong
+    slug: kong
+    ats: ashby
+  - name: crusoe
+    slug: crusoe
+    ats: ashby
+  - name: pylon
+    slug: pylon
+    ats: ashby
+  - name: vapi
+    slug: vapi
+    ats: ashby
+  - name: granola
+    slug: granola
+    ats: ashby
+  - name: linear
+    slug: linear
+    ats: ashby
+  - name: greptile
+    slug: greptile
+    ats: ashby
+  - name: zed
+    slug: zed
+    ats: ashby
+  - name: e2b
+    slug: e2b
+    ats: ashby
+  - name: mercor
+    slug: mercor
+    ats: ashby
+  - name: browserbase
+    slug: browserbase
+    ats: ashby
+  - name: wealthsimple
+    slug: wealthsimple
+    ats: ashby
+  - name: rho
+    slug: rho
+    ats: ashby
+  - name: whatnot
+    slug: whatnot
+    ats: ashby
+  - name: whoop
+    slug: whoop
+    ats: ashby
+  - name: boom supersonic
+    slug: boom
+    ats: ashby
+  - name: aleph alpha
+    slug: alephalpha
+    ats: ashby
+  - name: anyscale
+    slug: anyscale
+    ats: ashby
+  - name: articul8
+    slug: articul8
+    ats: ashby
+  - name: bestow
+    slug: bestow
+    ats: ashby
+  - name: common room
+    slug: commonroom
+    ats: ashby
+  - name: eight sleep
+    slug: eightsleep
+    ats: ashby
+  - name: material security
+    slug: materialsecurity
+    ats: ashby
+  - name: motherduck
+    slug: motherduck
+    ats: ashby
+  - name: sardine
+    slug: sardine
+    ats: ashby
+  - name: scribe
+    slug: scribe
+    ats: ashby
+  - name: slope
+    slug: slope
+    ats: ashby
+  - name: stedi
+    slug: stedi
+    ats: ashby
+  - name: tonal
+    slug: tonal
+    ats: ashby
+  - name: y combinator
+    slug: ycombinator
+    ats: ashby
+
+  # Lever
+  - name: wealthfront
+    slug: wealthfront
+    ats: lever
+  - name: twingate
+    slug: twingate
+    ats: lever
+  - name: coupa
+    slug: coupa
+    ats: lever
+  - name: gridmatic
+    slug: gridmatic
+    ats: lever
+  - name: lessen
+    slug: lessen
+    ats: lever
+  - name: metabase
+    slug: metabase
+    ats: lever
+
 
 criteria:
   target_roles:
