@@ -1,6 +1,6 @@
 """Database models. SQLite locally, Postgres in production - same schema."""
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, create_engine, JSON, event
+from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, ForeignKey, create_engine, JSON, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 
@@ -52,6 +52,20 @@ class Settings(Base):
     key = Column(String, primary_key=True)
     value = Column(String)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class JobFeedback(Base):
+    """Free-form user feedback on a single job. Distilled daily into Profile.data['scoring_lessons']."""
+    __tablename__ = "job_feedback"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(String, ForeignKey("jobs.id"), index=True, nullable=False)
+    company = Column(String, index=True)
+    note = Column(Text, nullable=False)
+    source = Column(String)  # "drawer" | "skip"
+    score_at_time = Column(Float)
+    red_flags_at_time = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./job_agent.db")

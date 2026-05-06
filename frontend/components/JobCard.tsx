@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Job, fetchCompanyNotes, updateStatus } from "@/lib/api";
+import {
+  Job,
+  fetchCompanyNotes,
+  fetchJobFeedback,
+  saveJobFeedback,
+  updateStatus,
+} from "@/lib/api";
 import { MatchBadge } from "./MatchBadge";
 import { CompanyNotes } from "./CompanyNotes";
+import { JobFeedback } from "./JobFeedback";
+import { SkipFeedbackModal } from "./SkipFeedbackModal";
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "—";
@@ -31,6 +39,9 @@ export function JobCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [noteCount, setNoteCount] = useState<number | null>(null);
+  const [feedbackExpanded, setFeedbackExpanded] = useState(false);
+  const [feedbackCount, setFeedbackCount] = useState<number | null>(null);
+  const [skipModalOpen, setSkipModalOpen] = useState(false);
   const [marking, setMarking] = useState(false);
 
   // Prefetch the note count so the chip shows "Notes for Vercel · 2"
@@ -49,10 +60,33 @@ export function JobCard({
     };
   }, [job.company]);
 
-  const handleSkip = async () => {
-    if (!confirm(`Skip ${job.company}?`)) return;
-    await updateStatus(job.id, "skipped");
-    onChange?.();
+  useEffect(() => {
+    let cancelled = false;
+    fetchJobFeedback(job.id)
+      .then((rows) => {
+        if (!cancelled) setFeedbackCount(rows.length);
+      })
+      .catch(() => {
+        if (!cancelled) setFeedbackCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [job.id]);
+
+  const handleSkip = () => setSkipModalOpen(true);
+
+  const confirmSkip = async (reason: string) => {
+    try {
+      if (reason) {
+        await saveJobFeedback(job.id, reason, "skip");
+      }
+      await updateStatus(job.id, "skipped");
+      setSkipModalOpen(false);
+      onChange?.();
+    } catch (e) {
+      alert(`Failed to skip: ${e instanceof Error ? e.message : e}`);
+    }
   };
 
   const handleApply = async () => {
@@ -84,6 +118,11 @@ export function JobCard({
     noteCount && noteCount > 0
       ? `Notes for ${job.company} · ${noteCount}`
       : `Notes for ${job.company}`;
+
+  const feedbackLabel =
+    feedbackCount && feedbackCount > 0
+      ? `Feedback · ${feedbackCount}`
+      : "Feedback";
 
   return (
     <article
@@ -168,6 +207,14 @@ export function JobCard({
         >
           {notesLabel} {expanded ? "▴" : "▾"}
         </button>
+        <button
+          type="button"
+          onClick={() => setFeedbackExpanded((v) => !v)}
+          className="btn-ghost"
+          aria-expanded={feedbackExpanded}
+        >
+          {feedbackLabel} {feedbackExpanded ? "▴" : "▾"}
+        </button>
         <span className="flex-1" />
         <button
           type="button"
@@ -194,6 +241,30 @@ export function JobCard({
           </div>
         </div>
       </div>
+
+      <div
+        className="grid transition-[grid-template-rows] duration-300 ease-out"
+        style={{ gridTemplateRows: feedbackExpanded ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-5 pt-5 border-t border-hairline">
+            {feedbackExpanded && (
+              <JobFeedback
+                jobId={job.id}
+                onCountChange={setFeedbackCount}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {skipModalOpen && (
+        <SkipFeedbackModal
+          company={companyDisplay ?? job.company}
+          onCancel={() => setSkipModalOpen(false)}
+          onConfirm={confirmSkip}
+        />
+      )}
     </article>
   );
 }

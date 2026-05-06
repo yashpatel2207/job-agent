@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from db.models import Job, get_session
 from scraper import load_config, TITLE_EXCLUDE_RE, TITLE_INCLUDE_RE
 from llm import call_llm
+from scorer.distill import get_lessons
 
 SCORING_WORKERS = 4
 BATCH_SIZE = 5
@@ -102,7 +103,7 @@ Return a JSON object with this exact shape, no markdown, no preamble:
   "role_type": "frontend" | "fullstack" | "other"
 }}
 
-Scoring guidance:
+{prior_feedback_block}Scoring guidance:
 - If the role is in the exclusion list (crypto, web3, etc.), score 0.
 - FULL-STACK BACKEND STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch.
 - ROLE TYPE: Classify the role as one of:
@@ -157,7 +158,7 @@ Return a JSON object with a single key "results" whose value is an array of obje
 
 Return STRICTLY valid JSON, no markdown, no preamble. The "results" array length must match the input length.
 
-Scoring guidance:
+{prior_feedback_block}Scoring guidance:
 - If the role is in the exclusion list (crypto, web3, etc.), score 0.
 - FULL-STACK BACKEND STACK: If the role is full-stack, the backend stack must be JavaScript/TypeScript (Node.js, NestJS, Express, Next.js API routes, tRPC). Full-stack roles primarily backed by Python, Java, Go, Ruby, C#, or Rust should score 4 or below with a red flag noting the backend stack mismatch.
 - ROLE TYPE: Classify the role as one of:
@@ -220,6 +221,20 @@ def prescreen(job: Job, criteria: dict) -> dict | None:
     return None
 
 
+def _build_prior_feedback_block() -> str:
+    """Render the distilled-lessons block for injection into scoring prompts.
+    Returns an empty string when there are no lessons so the prompt has no header."""
+    rules = get_lessons()
+    if not rules:
+        return ""
+    bullets = "\n".join(f"- {r}" for r in rules)
+    return (
+        "PRIOR USER FEEDBACK (calibrate scoring against these patterns "
+        "the user has flagged on past postings):\n"
+        f"{bullets}\n\n"
+    )
+
+
 def _strip_code_fence(text: str) -> str:
     if text.startswith("```"):
         text = text.split("```")[1]
@@ -243,6 +258,7 @@ def score_job(job: Job, criteria: dict) -> dict:
         title=job.title,
         location=job.location or "unspecified",
         jd_text=job.jd_text[:8000],
+        prior_feedback_block=_build_prior_feedback_block(),
     )
 
     last_err = None
@@ -282,6 +298,7 @@ def score_jobs_batch(jobs: list[Job], criteria: dict) -> list[dict]:
         exclude=", ".join(criteria["exclude"]),
         sponsorship_required="yes" if criteria.get("sponsorship_required") else "no",
         jobs_json=json.dumps(payload, ensure_ascii=False),
+        prior_feedback_block=_build_prior_feedback_block(),
     )
 
     last_err = None

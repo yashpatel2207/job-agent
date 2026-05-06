@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 import requests
 
-from db.models import Job, Profile, MasterResume, Settings, get_session, init_db
+from db.models import Job, JobFeedback, Profile, MasterResume, Settings, get_session, init_db
 from scraper import load_config
 
 GITHUB_REPO = os.getenv("GITHUB_REPO", "yashpatel2207/job-agent")
@@ -86,6 +86,79 @@ def update_status(job_id: str, payload: UpdateJobStatus):
             job.applied_at = datetime.utcnow()
         elif payload.status == "new":
             job.applied_at = None
+        session.commit()
+        return {"ok": True}
+    finally:
+        session.close()
+
+
+class SaveJobFeedback(BaseModel):
+    note: str
+    source: Literal["drawer", "skip"] = "drawer"
+
+
+def _feedback_to_dict(f: JobFeedback) -> dict:
+    return {
+        "id": f.id,
+        "job_id": f.job_id,
+        "company": f.company,
+        "note": f.note,
+        "source": f.source,
+        "score_at_time": f.score_at_time,
+        "red_flags_at_time": f.red_flags_at_time or [],
+        "created_at": f.created_at.isoformat() if f.created_at else None,
+    }
+
+
+@app.get("/api/jobs/{job_id}/feedback")
+def list_job_feedback(job_id: str):
+    session = get_session()
+    try:
+        rows = (
+            session.query(JobFeedback)
+            .filter(JobFeedback.job_id == job_id)
+            .order_by(JobFeedback.created_at.desc())
+            .all()
+        )
+        return [_feedback_to_dict(r) for r in rows]
+    finally:
+        session.close()
+
+
+@app.post("/api/jobs/{job_id}/feedback")
+def save_job_feedback(job_id: str, payload: SaveJobFeedback):
+    note = payload.note.strip()
+    if not note:
+        raise HTTPException(400, "note is required")
+    session = get_session()
+    try:
+        job = session.query(Job).filter(Job.id == job_id).first()
+        if not job:
+            raise HTTPException(404, "job not found")
+        row = JobFeedback(
+            job_id=job.id,
+            company=job.company,
+            note=note,
+            source=payload.source,
+            score_at_time=job.score,
+            red_flags_at_time=job.red_flags or [],
+        )
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        return _feedback_to_dict(row)
+    finally:
+        session.close()
+
+
+@app.delete("/api/feedback/{feedback_id}")
+def delete_feedback(feedback_id: int):
+    session = get_session()
+    try:
+        row = session.query(JobFeedback).filter(JobFeedback.id == feedback_id).first()
+        if not row:
+            raise HTTPException(404)
+        session.delete(row)
         session.commit()
         return {"ok": True}
     finally:

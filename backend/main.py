@@ -23,6 +23,7 @@ load_dotenv()
 from db.models import Job, Settings, get_session, init_db
 from scraper import scrape_all, filter_new, save_jobs
 from scorer import score_all_unscored
+from scorer.distill import distill_lessons
 
 STALE_DAYS = 30
 
@@ -94,7 +95,10 @@ def main():
     new_jobs = filter_new(scraped)
     save_jobs(new_jobs)
 
-    print("\n[2/2] Scoring...")
+    print("\n[2/2] Distilling user feedback into scoring lessons...")
+    distill_lessons()
+
+    print("\nScoring...")
     score_all_unscored()
 
     print("\nDone. Open the dashboard to review.")

@@ -143,3 +143,39 @@ export async function saveCompanyNotes(
   if (!res.ok) throw new Error("Failed to save company notes");
   return res.json();
 }
+
+export interface JobFeedback {
+  id: number;
+  job_id: string;
+  company: string;
+  note: string;
+  source: "drawer" | "skip";
+  score_at_time: number | null;
+  red_flags_at_time: string[];
+  created_at: string | null;
+}
+
+export async function fetchJobFeedback(jobId: string): Promise<JobFeedback[]> {
+  const res = await fetch(`${API_URL}/api/jobs/${jobId}/feedback`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch feedback");
+  return res.json();
+}
+
+export async function saveJobFeedback(
+  jobId: string,
+  note: string,
+  source: "drawer" | "skip" = "drawer",
+): Promise<JobFeedback> {
+  const res = await fetch(`${API_URL}/api/jobs/${jobId}/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note, source }),
+  });
+  if (!res.ok) throw new Error("Failed to save feedback");
+  return res.json();
+}
+
+export async function deleteFeedback(feedbackId: number): Promise<void> {
+  const res = await fetch(`${API_URL}/api/feedback/${feedbackId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete feedback");
+}
