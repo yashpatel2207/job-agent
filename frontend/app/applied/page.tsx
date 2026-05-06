@@ -5,6 +5,8 @@ import { fetchJobs, updateStatus, Job } from "@/lib/api";
 import { MatchBadge } from "@/components/MatchBadge";
 import { Pagination } from "@/components/Pagination";
 import { FilterSegment } from "@/components/FilterSegment";
+import { CompanyNotes } from "@/components/CompanyNotes";
+import { JobFeedback } from "@/components/JobFeedback";
 import { lookupCompany, useCompanyMap } from "@/lib/companyDisplay";
 
 const PAGE_SIZE = 10;
@@ -14,7 +16,17 @@ export default function AppliedPage() {
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const companyMap = useCompanyMap();
+
+  const toggleOpen = (id: string) => {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchJobs({ status: "applied" })
@@ -155,41 +167,64 @@ export default function AppliedPage() {
           <div className="card overflow-hidden">
             {paged.map((j, i) => {
               const seq = (page - 1) * PAGE_SIZE + i + 1;
+              const isOpen = openIds.has(j.id);
               return (
-                <article
+                <div
                   key={j.id}
-                  className="group grid grid-cols-[36px_1fr_auto] sm:grid-cols-[60px_1fr_auto_auto] items-center gap-4 sm:gap-6 px-5 sm:px-7 py-5 border-b border-hairline last:border-b-0 hover:bg-snow-2 transition-colors duration-200 reveal"
+                  className="border-b border-hairline last:border-b-0 reveal"
                   style={{ animationDelay: `${0.04 + Math.min(i, 12) * 0.025}s` }}
                 >
-                  <span className="font-mono text-[12px] tabular-nums text-mute group-hover:text-coral transition-colors duration-200 text-right">
-                    {String(seq).padStart(3, "0")}
-                  </span>
-                  <a
-                    href={j.apply_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="min-w-0 block"
+                  <article
+                    className="group grid grid-cols-[36px_1fr_auto_auto] sm:grid-cols-[60px_1fr_auto_auto_auto] items-center gap-4 sm:gap-6 px-5 sm:px-7 py-5 hover:bg-snow-2 transition-colors duration-200"
                   >
-                    <p className="text-[13px] font-semibold text-coral mb-1 truncate">
-                      {lookupCompany(companyMap, j.company).display}
-                    </p>
-                    <p className="font-semibold text-[17px] leading-tight tracking-snug truncate text-ink group-hover:text-coral transition-colors duration-200">
-                      {j.title}
-                    </p>
-                    <p className="label mt-1.5">
-                      {j.location || "—"}
-                    </p>
-                  </a>
-                  <div className="hidden sm:block">
-                    <MatchBadge score={j.score} size="sm" />
+                    <span className="font-mono text-[12px] tabular-nums text-mute group-hover:text-coral transition-colors duration-200 text-right">
+                      {String(seq).padStart(3, "0")}
+                    </span>
+                    <a
+                      href={j.apply_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="min-w-0 block"
+                    >
+                      <p className="text-[13px] font-semibold text-coral mb-1 truncate">
+                        {lookupCompany(companyMap, j.company).display}
+                      </p>
+                      <p className="font-semibold text-[17px] leading-tight tracking-snug truncate text-ink group-hover:text-coral transition-colors duration-200">
+                        {j.title}
+                      </p>
+                      <p className="label mt-1.5">
+                        {j.location || "—"}
+                      </p>
+                    </a>
+                    <div className="hidden sm:block">
+                      <MatchBadge score={j.score} size="sm" />
+                    </div>
+                    <button
+                      onClick={() => toggleOpen(j.id)}
+                      aria-expanded={isOpen}
+                      className="text-[13px] text-slate hover:text-coral transition-colors px-2 font-medium"
+                    >
+                      Notes {isOpen ? "▴" : "▾"}
+                    </button>
+                    <button
+                      onClick={() => handleUndo(j.id)}
+                      className="text-[13px] text-slate hover:text-coral transition-colors px-2 font-medium"
+                    >
+                      Undo
+                    </button>
+                  </article>
+                  <div
+                    className="grid transition-[grid-template-rows] duration-300 ease-out"
+                    style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-5 sm:px-7 pb-6 pt-1 space-y-6 border-t border-hairline">
+                        {isOpen && <CompanyNotes company={j.company} />}
+                        {isOpen && <JobFeedback jobId={j.id} />}
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleUndo(j.id)}
-                    className="text-[13px] text-slate hover:text-coral transition-colors px-2 font-medium"
-                  >
-                    Undo
-                  </button>
-                </article>
+                </div>
               );
             })}
           </div>
