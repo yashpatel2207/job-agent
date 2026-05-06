@@ -4,8 +4,8 @@ A personal job application agent: scrapes target companies daily and scores post
 
 ## What it does
 
-- Scrapes Greenhouse, Lever, Ashby, and Workday career pages for ~25 companies you configure
-- Scores each new job against your criteria using a free-tier LLM
+- Scrapes Greenhouse, Lever, Ashby, and Workday career pages for ~275 companies you configure (full list in `backend/companies.yaml`)
+- Scores each new job against your criteria using a free-tier LLM, with a regex prescreen first so the LLM only sees plausibly-relevant roles
 - Surfaces the queue in a Next.js dashboard each morning
 - You write your own essay answers in your own voice, tailor your resume yourself, and apply manually
 
@@ -16,6 +16,10 @@ A personal job application agent: scrapes target companies daily and scores post
 - FastAPI server exposes jobs to the frontend
 - Next.js 14 + Tailwind frontend, deployed to Vercel free tier
 - GitHub Actions runs the daily scrape at 10am UTC (6am ET)
+
+## How scoring works
+
+Two stages. First, a cheap regex prescreen drops anything whose title doesn't match the frontend/web/JS-TS filter, anything in your exclusion list, security-clearance roles, no-sponsorship language (when `sponsorship_required: true`), and non-US-only locations. Survivors go through batched LLM scoring (5 jobs per call, round-robined across 6 free providers). Per-job feedback you leave in the dashboard gets distilled daily into a small rules block that's injected into both scoring prompts, so the scorer learns what you actually care about over time.
 
 ## First-time setup
 
@@ -41,13 +45,7 @@ npm install
 
 ### 2. Create your profile and master resume
 
-```bash
-cd backend
-cp profile.example.json profile.json
-cp master_resume.example.json master_resume.json
-```
-
-Edit both files with your real info. The `profile.json` holds personal details, work auth, EEO defaults, and saved essay answers. The `master_resume.json` is your full resume — kept in the DB so the dashboard can reference it later if you ever add a tailoring feature back.
+Create `backend/profile.json` and `backend/master_resume.json` by hand — they're free-form JSON columns and there are no template files in the repo. See `Profile.data` and `MasterResume.data` in [backend/db/models.py](backend/db/models.py) for the shape `seed.py` expects. The `profile.json` holds personal details, work auth, and EEO defaults; `master_resume.json` is your full resume.
 
 ### 3. Configure your target companies
 
@@ -60,21 +58,29 @@ Edit `backend/companies.yaml`. Each company needs a `slug` that matches its ATS 
 
 Also set your criteria: target roles, required skills, comp floor, location, and exclusions.
 
-### 4. Get three free LLM API keys
+### 4. Get six free LLM API keys
 
-The pipeline round-robins across three free-tier providers (Gemini, Groq, Cerebras) so no single provider's rate limit throttles a run. Each is free to obtain, no credit card:
+The pipeline round-robins across six permanently-free-tier providers so no single provider's rate limit throttles a run. Each is free to obtain, no credit card:
 
-- **Gemini 2.0 Flash** — sign up at https://aistudio.google.com, create a key.
-- **Groq** (Llama 3.3 70B) — sign up at https://console.groq.com, create a key.
-- **Cerebras** (Llama 3.3 70B) — sign up at https://cloud.cerebras.ai, create a key.
+- **Gemini 2.5 Flash-Lite** — sign up at https://aistudio.google.com
+- **Groq** (Llama 3.3 70B Versatile) — sign up at https://console.groq.com
+- **Cerebras** (gpt-oss-120b) — sign up at https://cloud.cerebras.ai
+- **Mistral** (Mistral Large) — sign up at https://console.mistral.ai
+- **NVIDIA NIM** (Llama 3.3 70B Instruct) — sign up at https://build.nvidia.com
+- **OpenRouter** (Qwen3-Next 80B free) — sign up at https://openrouter.ai
 
-Export all three:
+Export all six:
 
 ```bash
 export GEMINI_API_KEY=...
 export GROQ_API_KEY=...
 export CEREBRAS_API_KEY=...
+export MISTRAL_API_KEY=...
+export NVIDIA_API_KEY=...
+export OPENROUTER_API_KEY=...
 ```
+
+Missing keys are silently skipped — the dispatcher only fails when *all* providers are absent or throttled — but with all six the pipeline is far less likely to hit a wall mid-run.
 
 ### 5. Seed the database and run the pipeline once
 
@@ -95,6 +101,8 @@ npm install
 npm run dev
 ```
 
+> **Note:** `package.json` hard-codes the Windows venv path (`venv\Scripts\uvicorn.exe`) for the backend script. On macOS/Linux, skip the shortcut and use the two-terminal flow below.
+
 Or start them separately:
 
 Terminal 1 (API):
@@ -114,10 +122,12 @@ Open http://localhost:3000.
 ## Daily workflow
 
 1. GitHub Actions runs `main.py` at 6am ET, populates the database
-2. Morning: open the dashboard, review ranked jobs
-3. For ones you want to apply to, open the detail page and write your custom essay answers in your own voice
-4. Tailor your resume yourself, apply on the company's site
-5. Click "Mark as applied" on the detail page (and "Undo" from the Applied tab if you tap it by mistake)
+2. Morning: open the dashboard, review ranked jobs in the queue
+3. Click through to each company's apply URL, tailor your resume, and write essays in your own voice
+4. Click "Mark as applied" on the job card (and "Undo" from the Applied tab if you tap it by mistake)
+5. Use the per-job feedback drawer on each card to record why you skipped or what was off — those notes get distilled daily into rules that get injected into both scoring prompts
+
+You can also pause the daily cron or trigger an on-demand run from the dashboard. Both go through the GitHub Actions API and require a `GITHUB_TOKEN` with `actions:write` scope in `backend/.env`.
 
 ## Deploy
 
@@ -131,9 +141,14 @@ Set these repo secrets:
 - `GEMINI_API_KEY`
 - `GROQ_API_KEY`
 - `CEREBRAS_API_KEY`
+- `MISTRAL_API_KEY`
+- `NVIDIA_API_KEY`
+- `OPENROUTER_API_KEY`
 - `DATABASE_URL` (Postgres connection string)
 - `PROFILE_JSON` (paste the full content of your profile.json)
 - `MASTER_RESUME_JSON` (paste the full content of your master_resume.json)
+
+`GITHUB_TOKEN` is auto-provided to the workflow itself. For the dashboard's pause / "Run now" buttons to work locally, generate a personal access token with `actions:write` scope and put it in `backend/.env` as `GITHUB_TOKEN`.
 
 ### Frontend (Vercel)
 
@@ -152,17 +167,19 @@ backend/
   main.py                  pipeline entry: scrape -> score
   seed.py                  load profile + resume into DB
   server.py                FastAPI for the dashboard
+  llm.py                   round-robin dispatcher across 6 free providers
   scraper/                 greenhouse, lever, ashby, workday clients
-  scorer/                  LLM scoring
+  scorer/                  prescreen + batched LLM scoring
   db/models.py             SQLAlchemy models
 
 frontend/
   app/
     page.tsx               queue
-    job/[id]/page.tsx      detail + essay editor
     applied/page.tsx       history
-    profile/page.tsx       profile (read-only in v1)
-  components/              JobCard, MatchBadge, StatCard
+    profile/page.tsx       profile (read-only)
+  components/              JobCard, JobFeedback, SkipFeedbackModal,
+                           MatchBadge, StatCard, CronControlPanel,
+                           CompanyNotes, FilterSegment, Pagination, TierNav
   lib/api.ts               backend client
 
 .github/workflows/
