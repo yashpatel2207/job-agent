@@ -1,0 +1,47 @@
+name: Keepalive
+
+# Keeps the "Daily scrape" scheduled workflow from being auto-disabled.
+# GitHub disables schedule-triggered workflows after 60 days with no commit
+# activity in the repo. This job rewrites a date marker and pushes a commit on
+# a weekly schedule, so the 60-day clock never runs out. It also re-enables the
+# daily-scrape workflow in case GitHub had already disabled it.
+
+on:
+  schedule:
+    - cron: "17 5 * * 0" # 05:17 UTC every Sunday
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # push the keepalive commit
+  actions: write # re-enable daily-scrape.yml if it was disabled
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refresh keepalive marker and push commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cat > .github/keepalive.txt <<EOF
+          This file exists solely to keep the "Daily scrape" scheduled workflow alive.
+
+          GitHub automatically disables schedule-triggered workflows after 60 days of
+          no commit activity in the repository. The Keepalive workflow rewrites the
+          date below on a weekly schedule so that clock never reaches 60 days.
+
+          Last keepalive: $(date -u +%Y-%m-%d)
+          EOF
+          git add .github/keepalive.txt
+          if git commit -m "chore: keepalive $(date -u +%Y-%m-%d)"; then
+            git push
+          else
+            echo "No change to commit (already refreshed today)."
+          fi
+
+      - name: Re-enable daily-scrape if GitHub disabled it
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow enable daily-scrape.yml || true
