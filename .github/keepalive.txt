@@ -1,0 +1,7 @@
+This file exists solely to keep the daily-scrape scheduled workflow alive.
+
+GitHub automatically disables `schedule`-triggered workflows after 60 days of
+no commit activity in the repository. Committing here periodically resets that
+60-day clock so the daily cron keeps running.
+
+Last keepalive: 2026-08-02
